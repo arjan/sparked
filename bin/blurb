@@ -1,4 +1,6 @@
+#!/usr/bin/env python
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
-__version__ = "0.1"
+from blurb.launcher import main
+main()

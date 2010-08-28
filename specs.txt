@@ -8,9 +8,12 @@
 
 * state machine
 
-* graphical display (clutter), easy fullscreen
+* graphics display (clutter), easy fullscreen
+* graphics widget library (mxpy)
 * onscreen keyboard
-* gui widget library (mxpy)
+* GUI window
+  - system status area
+  - log area
 
 * hardware detection plug and play
   - serial ports
@@ -38,4 +41,9 @@
    - gui
    - osc
 
+* basics
+  - twisted logging 
+  - --debug flag toggles log level
+  - restart on crash 
+  
 * usage: blurb [blurb options] <plugin> [plugin options]
