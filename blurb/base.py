@@ -7,7 +7,7 @@ from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import events
+from blurb import events, gui, stage
 
 
 class Blurb(service.MultiService):
@@ -25,6 +25,11 @@ class Blurb(service.MultiService):
     baseOpts = None
     pluginOpts = None
 
+
+    statusWindow = None
+    stage = None
+
+
     def __init__(self, baseOpts, pluginOpts):
         service.MultiService.__init__(self)
 
@@ -32,7 +37,30 @@ class Blurb(service.MultiService):
         self.pluginOpts = pluginOpts
 
         self.state = StateMachine(self)
+
+        reactor.callLater(0, self.startUp)
         reactor.callLater(0, self.state.set, "start")
+
+
+    def startUp(self):
+        """
+        Create all services and GUI objects as needed.
+        """
+        self.statusWindow = self.createStatusWindow()
+        if self.statusWindow:
+            gui.guiEvents.addEventListener(lambda _: reactor.stop(), gui.StatusWindowClosed)
+
+        self.stage = self.createStage()
+        if self.stage:
+            stage.stageEvents.addEventListener(lambda _: reactor.stop(), stage.StageClosed)
+
+
+    def createStatusWindow(self):
+        return gui.StatusWindow(self)
+
+
+    def createStage(self):
+        return stage.Stage(self)
 
 
 
@@ -47,10 +75,12 @@ class StateMachine (object):
 
     _state = None
     _statechanger = None
+    _listeners = None
 
 
     def __init__(self, parent):
-        self.parent = parent
+        self._listeners = []
+        self.addListener(parent)
 
 
     def set(self, newstate):
@@ -63,18 +93,12 @@ class StateMachine (object):
             self._statechanger.cancel()
 
         if self._state:
-            try:
-                getattr(self.parent, 'exit_%s' % self._state)()
-            except AttributeError:
-                pass
+            self._call("exit_%s" % self._state)
 
         log.msg("%s --> %s" % (self._state, newstate))
         self._state = newstate
 
-        try:
-            getattr(self.parent, 'enter_%s' % self._state)()
-        except AttributeError:
-            pass
+        self._call("enter_%s" % self._state)
 
 
     def setAfter(self, newstate, after):
@@ -94,6 +118,17 @@ class StateMachine (object):
         """
         return self._state
 
+
+    def _call(self, cb, *arg):
+        for l in self._listeners:
+            try:
+                getattr(l, cb)(*arg)
+            except AttributeError:
+                pass
+
+
+    def addListener(self, l):
+        self._listeners.append(l)
 
 
 systemEvents = events.EventGroup()

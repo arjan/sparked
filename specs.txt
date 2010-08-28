@@ -1,12 +1,32 @@
 
 
 
-
+DONE:
+---------------------------------------------------------------
 
 * plugin architecture
   - pass commandline args to plugin
 
 * state machine
+
+* eventing system
+  - using python decorators?
+  - grouped into the different blurb subsystems:
+   - hardware
+   - gui
+   - osc
+
+* basics
+  - twisted logging 
+  - --debug flag toggles log level
+  - restart on crash 
+  
+* usage: blurb [blurb options] <plugin> [plugin options]
+
+
+
+TO DO:
+---------------------------------------------------------------
 
 * graphics display (clutter), easy fullscreen
 * graphics widget library (mxpy)
@@ -34,16 +54,3 @@
 * easy to write and plug own services
   - based on hardware
 
-* eventing system
-  - using python decorators
-  - grouped into the different blurb subsystems:
-   - hardware
-   - gui
-   - osc
-
-* basics
-  - twisted logging 
-  - --debug flag toggles log level
-  - restart on crash 
-  
-* usage: blurb [blurb options] <plugin> [plugin options]

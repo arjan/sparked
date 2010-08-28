@@ -20,8 +20,8 @@ class Blurb(base.Blurb):
 
 
     def enter_start(self):
-        self.state.setAfter("ping", 3)
+        self.state.setAfter("ping", 1)
 
     def enter_ping(self):
-        self.state.setAfter("start", 3)
+        self.state.setAfter("start", 1)
 
