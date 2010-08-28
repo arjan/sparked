@@ -2,15 +2,24 @@
 # See LICENSE for details.
 
 import sys
+import cPickle
+import base64
+import os
+import subprocess
 
 from twisted.python import usage
 
-from blurb import __version__
+from blurb import base, __version__
 
 
 class Options(usage.Options):
 
     optFlags = [["debug", "d", "Debug mode"]]
+
+    optParameters = [
+            ('pidfile', None, '/tmp/blurb.pid', 'Pidfile location')
+            ]
+
 
     def opt_version(self):
         print "Blurb", __version__
@@ -20,8 +29,7 @@ class Options(usage.Options):
 
 
 
-def splitOptions():
-    args = sys.argv[1:]
+def splitOptions(args):
     try:
         plugin = [a for a in args if a[0] != "-"][0]
     except IndexError:
@@ -30,12 +38,29 @@ def splitOptions():
     return (args[0:i], plugin, args[i+1:])
 
 
+def launch(pluginName, baseOptions):
+    argv = []
+    argv.append("twistd")
+    argv.append("--pidfile")
+    argv.append(baseOptions['pidfile'])
+    argv.append('-r')
+    argv.append('gtk2')
+    argv.append('-n')
+    argv.append('blurb')
+    argv = argv + sys.argv[1:]
+    print argv
+    env = os.environ
+    return subprocess.call(argv, env=env)
+    
+
+
+
 def main():
 
     try:
 
         options = Options()
-        blurbOpts, pluginName, pluginOpts = splitOptions()
+        blurbOpts, pluginName, pluginOpts = splitOptions(sys.argv[1:])
         options.parseOptions(blurbOpts)
 
         if not pluginName:
@@ -46,8 +71,15 @@ def main():
         except ImportError:
             raise usage.UsageError("Plugin not found: " + pluginName)
 
-        print pluginModule
+        if getattr(pluginModule, 'Options'):
+            opts = pluginModule.Options()
+            opts.parseOptions(pluginOpts)
 
+        pluginInstance = pluginModule.Blurb()
+        if not isinstance(pluginInstance, base.Blurb):
+            raise usage.Usage("Invalid blurb plugin module: " + pluginModule)
+        
+        launch(pluginName, options)
 
 
     except usage.UsageError, errortext:
