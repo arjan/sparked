@@ -35,6 +35,15 @@ TO DO:
   - system status area
   - log area
 
+
+hardware.pnp       -- plug & play of devices
+hardware.protocols -- various hardware protocols
+
+monitors
+ - network
+ - power
+
+
 * hardware detection plug and play
   - serial ports
   - webcams

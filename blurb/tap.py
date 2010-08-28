@@ -1,6 +1,9 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+import tempfile
+import dbus.mainloop.glib
+
 from twisted.python import usage
 from twisted.internet import reactor
 
@@ -28,11 +31,14 @@ class Options(usage.Options):
 
 
 def makeService(config):
+
+    # Create dbus mainloop
+    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+
+    # Instantiate the main plugin
     s = config.module.Blurb(config.opts, config.pluginOpts)
 
     # Set up logging in ~/log/ikpoll.log, maximum 9 rotated log files.
-    import tempfile
-
     if not config.opts['debug']:
         logDir = FilePath(tempfile.gettempdir()).child('log')
         if not logDir.exists():

@@ -7,7 +7,7 @@ from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import events, gui, stage
+from blurb import events, gui, stage, monitors
 
 
 class Blurb(service.MultiService):
@@ -46,6 +46,9 @@ class Blurb(service.MultiService):
         """
         Create all services and GUI objects as needed.
         """
+
+        self.monitor = self.createMonitors()
+
         self.statusWindow = self.createStatusWindow()
         if self.statusWindow:
             gui.guiEvents.addEventListener(lambda _: reactor.stop(), gui.StatusWindowClosed)
@@ -62,6 +65,13 @@ class Blurb(service.MultiService):
     def createStage(self):
         return stage.Stage(self)
 
+
+    def createMonitors(self):
+        m = monitors.MonitorContainer()
+        m.addMonitor(monitors.PowerMonitor())
+
+        m.setServiceParent(self)
+        return m
 
 
 class StateMachine (object):

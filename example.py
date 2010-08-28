@@ -13,6 +13,7 @@ class Options(usage.Options):
 class Blurb(base.Blurb):
 
     def startService(self):
+        base.Blurb.startService(self)
         base.systemEvents.addEventListener(self.systemEvent)
 
     def systemEvent(self, e):
