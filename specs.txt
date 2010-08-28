@@ -1,0 +1,41 @@
+
+
+
+
+
+* plugin architecture
+  - pass commandline args to plugin
+
+* state machine
+
+* graphical display (clutter), easy fullscreen
+* onscreen keyboard
+* gui widget library (mxpy)
+
+* hardware detection plug and play
+  - serial ports
+  - webcams
+  - rfid readers
+  - HID devices
+  - automatic mapping of detected hardware onto service classes;
+    protocol sniffing / probing for serial devices
+
+* remote control (OSC)
+  standard interface into the machine state and connected devices
+
+* system sanity checking
+  - internet connection
+  - power connection
+  - easy-to-write custom sanity checks
+
+* easy to write and plug own services
+  - based on hardware
+
+* eventing system
+  - using python decorators
+  - grouped into the different blurb subsystems:
+   - hardware
+   - gui
+   - osc
+
+* usage: blurb [blurb options] <plugin> [plugin options]
