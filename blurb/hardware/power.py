@@ -1,9 +1,10 @@
-#
-# Power monitor: fires events when AC power becomes (un)available; and
-# fires an event when the power becomes critically low.
-#
-# Requires a glib2 or gtk2 reactor due to dbus use.
-#
+# Copyright (c) 2010 Arjan Scherpenisse
+# See LICENSE for details.
+
+"""
+Power monitor: fires events when AC power becomes (un)available; and
+fires an event when the power becomes critically low.
+"""
 
 import dbus
 

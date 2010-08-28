@@ -47,5 +47,4 @@ def makeService(config):
         logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
         log.addObserver(log.FileLogObserver(logFile).emit)
 
-    reactor.callLater(0, base.systemEvents.sendEvent, "started!")
     return s

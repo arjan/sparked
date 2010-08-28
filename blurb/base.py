@@ -69,9 +69,12 @@ class Blurb(service.MultiService):
     def createMonitors(self):
         m = monitors.MonitorContainer()
         m.addMonitor(monitors.PowerMonitor())
+        m.addMonitor(monitors.NetworkMonitor())
+        m.addMonitor(monitors.NetworkWebMonitor())
 
         m.setServiceParent(self)
         return m
+
 
 
 class StateMachine (object):
@@ -139,6 +142,3 @@ class StateMachine (object):
 
     def addListener(self, l):
         self._listeners.append(l)
-
-
-systemEvents = events.EventGroup()
