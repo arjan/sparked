@@ -49,7 +49,7 @@ class PowerMonitor (Monitor):
     def added(self, container):
         svc = power.PowerService()
         svc.setServiceParent(container)
-        power.powerEvents.addEventListener(self.powerEvent)
+        power.powerEvents.addEventListener(lambda e: self.events.sendEvent(MonitorEvent(monitor=self,ok=e.available)), power.PowerAvailableEvent)
 
     def powerEvent(self, e):
         self.events.sendEvent(e)
