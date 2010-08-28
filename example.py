@@ -18,3 +18,10 @@ class Blurb(base.Blurb):
     def systemEvent(self, e):
         print e
 
+
+    def enter_start(self):
+        self.state.setAfter("ping", 3)
+
+    def enter_ping(self):
+        self.state.setAfter("start", 3)
+

@@ -5,6 +5,7 @@ import sys
 import cPickle
 import base64
 import os
+import tempfile
 import subprocess
 
 from twisted.python import usage
@@ -17,7 +18,7 @@ class Options(usage.Options):
     optFlags = [["debug", "d", "Debug mode"]]
 
     optParameters = [
-            ('pidfile', None, '/tmp/blurb.pid', 'Pidfile location')
+            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<pluginname>.pid')
             ]
 
 
@@ -48,11 +49,9 @@ def launch(pluginName, baseOptions):
     argv.append('-n')
     argv.append('blurb')
     argv = argv + sys.argv[1:]
-    print argv
+
     env = os.environ
     return subprocess.call(argv, env=env)
-    
-
 
 
 def main():
@@ -78,7 +77,10 @@ def main():
         pluginInstance = pluginModule.Blurb(options, opts)
         if not isinstance(pluginInstance, base.Blurb):
             raise usage.Usage("Invalid blurb plugin module: " + pluginModule)
-        
+
+        if not options['pidfile']:
+            options['pidfile'] = os.path.join(tempfile.gettempdir(), pluginName.replace(".", "_") + ".pid")
+
         launch(pluginName, options)
 
 
