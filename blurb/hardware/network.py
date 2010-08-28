@@ -59,7 +59,7 @@ class NetworkWebConnectionService(service.Service):
     """
 
     url = "http://www.google.com/"
-    delay = 5
+    delay = 30
 
     def startService(self):
         self.connected = False
