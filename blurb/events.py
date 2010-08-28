@@ -30,18 +30,11 @@ class EventGroup(object):
         self.listeners = []
 
 
-    def receiveEvents(self, *matches):
-        """
-        Decorator object for receiving events.
-        """
-        def wrap(f):
-            if not len(matches):
-                self.listeners.append( (f, True) )
-            else:
-                self.listeners.append( (f, matches) )
-            return f
-
-        return wrap
+    def addEventListener(self, f, *a):
+        if len(a):
+            self.listeners.append( (f, a) )
+        else:
+            self.listeners.append( (f, True) )
 
 
     def sendEvent(self, e):

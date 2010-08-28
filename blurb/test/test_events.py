@@ -22,9 +22,9 @@ class TestEventGroup(unittest.TestCase):
 
         rcv = []
 
-        @g.receiveEvents()
         def receive(e):
             rcv.append(e)
+        g.addEventListener(receive)
 
         g.sendEvent("hello")
         self.assertEquals(rcv, ["hello"])
@@ -37,16 +37,16 @@ class TestEventGroup(unittest.TestCase):
 
         rcv = []
 
-        @g.receiveEvents()
         def receive(e):
             rcv.append(e)
+        g.addEventListener(receive)
 
         class MyEvent(events.Event):
             pass
 
-        @g.receiveEvents(MyEvent)
         def receive1(e):
             rcv.append(e)
+        g.addEventListener(receive, MyEvent)
 
         g.sendEvent("hello")
         self.assertEquals(rcv, ["hello"])
@@ -62,3 +62,33 @@ class TestEventGroup(unittest.TestCase):
     def testEvent(self):
         self.assertEquals(events.Event(foo="bar"), events.Event(foo="bar"))
         self.assertNotEquals(events.Event(foo="bar", baz="hi"), events.Event(foo="bar"))
+
+
+    def testGroupInstance(self):
+
+        g = events.EventGroup()
+
+        class MyEvent(events.Event):
+            pass
+
+        class Receiver:
+
+            def __init__(self):
+                self.rcv = []
+                g.addEventListener(self.receive)
+                g.addEventListener(self.receive2, MyEvent)
+
+            def receive(self, e):
+                self.rcv.append(e)
+
+            def receive2(self, e):
+                self.rcv.append(e)
+
+        r = Receiver()
+
+        g.sendEvent("hello")
+        self.assertEquals(r.rcv, ["hello"])
+
+        g.sendEvent(MyEvent())
+        self.assertEquals(r.rcv, ["hello", MyEvent(), MyEvent()])
+

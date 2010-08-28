@@ -75,7 +75,7 @@ def main():
             opts = pluginModule.Options()
             opts.parseOptions(pluginOpts)
 
-        pluginInstance = pluginModule.Blurb()
+        pluginInstance = pluginModule.Blurb(options, opts)
         if not isinstance(pluginInstance, base.Blurb):
             raise usage.Usage("Invalid blurb plugin module: " + pluginModule)
         
