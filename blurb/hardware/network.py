@@ -59,31 +59,33 @@ class NetworkWebConnectionService(service.Service):
     """
 
     url = "http://www.google.com/"
-    delay = 30
+    delay = 5
 
     def startService(self):
-        self.loop()
         self.connected = False
+        self.loop()
         # Listen to events from NetworkManager
         networkEvents.addEventListener(self.event, NetworkConnectionEvent)
 
 
     def loop(self):
         d = client.getPage(self.url)
-        def ok():
+        def ok(_):
+            print 123
             if not self.connected:
                 networkEvents.sendEvent(NetworkWebConnectionEvent(connected=True))
             self.connected = True
         d.addCallback(ok)
 
-        def error(_):
+        def error(f):
+            print f
             if self.connected:
                 networkEvents.sendEvent(NetworkWebConnectionEvent(connected=False))
             self.connected = False
         d.addErrback(error)
 
         d = defer.Deferred()
-        self.delay = reactor.callLater(self.delay, lambda : d.callback(None))
+        self._dc = reactor.callLater(self.delay, lambda : d.callback(None))
         d.addCallback(lambda _: self.loop())
         return d
 
@@ -93,11 +95,14 @@ class NetworkWebConnectionService(service.Service):
         Event from networkmanager came in. If network connection is
         down, do not try to fetch webpages.
         """
-        if self.delay and self.delay.active():
-            self.delay.cancel()
+        if self._dc and self._dc.active():
+            self._dc.cancel()
+
+        self.connected = False
         if e.connected:
             self.loop()
-
+        else:
+            networkEvents.sendEvent(NetworkWebConnectionEvent(connected=False))
 
 
 networkEvents = events.EventGroup()
