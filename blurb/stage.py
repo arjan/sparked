@@ -9,6 +9,9 @@ from blurb import events
 class StageClosed(events.Event):
     pass
 
+class StageFullscreenToggled(events.Event):
+    pass
+
 
 class Stage (clutter.Stage):
 
@@ -33,6 +36,7 @@ class Stage (clutter.Stage):
         Toggle this stage fullscreen or not.
         """
         self.set_fullscreen(not self.get_fullscreen())
+        stageEvents.sendEvent(StageFullscreenToggled(stage=self))
 
 
 stageEvents = events.EventGroup()

@@ -12,7 +12,11 @@ class StatusWindowClosed(events.Event):
     pass
 
 class StatusWindow (gtk.Window):
-
+    """
+    The status window for the blurb application.
+    Contains the log area
+    """
+    
     maxLogLines = 2000
 
     def __init__(self, app):
@@ -22,8 +26,10 @@ class StatusWindow (gtk.Window):
         self.connect("destroy", self.closed)
 
         self.log_area = gtk.TextView()
-        self.add(self.log_area)
-
+        w = gtk.ScrolledWindow()
+        w.add(self.log_area)
+        self.add(w)
+        self.set_size_request(500, 300)
         self.show_all()
         log.addObserver(self.log)
 
