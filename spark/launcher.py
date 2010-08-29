@@ -16,10 +16,15 @@ import time
 
 from twisted.python import usage
 
-from spark import __version__
+from spark import application, __version__
 
 
 class Options(usage.Options):
+
+    longdesc = """The <application> argument specifies a Python module which is executed as the main spark class. To see which options hold for an application, start:
+
+# spark <application> --help
+"""
 
     optFlags = [["debug", "d", "Debug mode"],
                 ["no-respawn", "N", "Do not respawn on crash"],
@@ -30,12 +35,12 @@ class Options(usage.Options):
             ]
 
 
-    def opt_version(self):
-        print "spark", __version__
-
     def getSynopsis(self):
-        return usage.Options.getSynopsis(self) + " <application> [app_options]"
+        return "spark [options] <application> [app_options]"
 
+    def opt_version(self):
+        print os.path.basename(sys.argv[0]), __version__
+        exit(0)
 
 
 class QuitFlag:
@@ -127,7 +132,12 @@ def main():
 
         if hasattr(appModule, 'Options'):
             opts = appModule.Options()
-            opts.parseOptions(appOpts)
+        else:
+            opts = application.Options()
+        opts.appName = app
+        if not hasattr(opts, 'longdesc'):
+            opts.longdesc = appModule.__doc__
+        opts.parseOptions(appOpts)
 
         if not options['pidfile']:
             options['pidfile'] = os.path.join(tempfile.gettempdir(), app + ".pid")

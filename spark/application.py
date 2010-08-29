@@ -8,10 +8,10 @@ The base application class.
 import time
 
 from twisted.application import service
-from twisted.python import log
+from twisted.python import log, usage
 from twisted.internet import reactor
 
-from spark import gui, stage, monitors
+from spark import gui, stage, monitors, __version__
 
 
 class Application(service.MultiService):
@@ -107,6 +107,24 @@ class Application(service.MultiService):
 
     def stopService(self):
         self.quitFlag.set()
+
+
+
+class Options (usage.Options):
+    appName = None
+    def getSynopsis(self):
+        return "spark [spark options] %s [options]" % self.appName
+
+    def opt_version(self):
+        if self.appName:
+            m = __import__(self.appName)
+            if hasattr(m, "__version__"):
+                v = m.__version__
+            else:
+                v = ""
+            print "%s %s (spark %s)" % (self.appName, v, __version__)
+        exit(0)
+
 
 
 class StateMachine (object):

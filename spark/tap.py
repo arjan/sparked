@@ -14,7 +14,7 @@ from twisted.python import log
 from twisted.python.filepath import FilePath
 from twisted.python.logfile import LogFile
 
-from spark import launcher
+from spark import launcher, application
 
 
 class Options(usage.Options):
@@ -28,9 +28,10 @@ class Options(usage.Options):
 
         if hasattr(self.module, 'Options'):
             self.appOpts = self.module.Options()
-            self.appOpts.parseOptions(appOpts)
         else:
-            self.appOpts = usage.Options()
+            self.appOpts = application.Options()
+        self.appOpts.parseOptions(appOpts)
+
 
 
 def makeService(config):

@@ -1,13 +1,16 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
-#
-# Example runner class for spark.
 
-from twisted.python import usage
+"""
+Example runner class for spark.
+"""
+
 from spark import application
 
-class Options(usage.Options):
-    optFlags = [["fast", "f", "Run fast"]]
+class Options(application.Options):
+   optFlags = [["fast", "f", "Run fast"]]
+
+__version__ = "0.1.0"
 
 
 class Application(application.Application):
