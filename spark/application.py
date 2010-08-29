@@ -111,6 +111,15 @@ class Application(service.MultiService):
 
 
 class Options (usage.Options):
+    """
+    Option parser for spark applications.
+
+    Spark applications which need their own commandline arguments can
+    inherit from this class: it takes care of the --version and --help
+    arguments, using the __version__ and docstring from the spark
+    application.
+    """
+
     appName = None
     def getSynopsis(self):
         return "spark [spark options] %s [options]" % self.appName
