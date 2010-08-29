@@ -23,7 +23,7 @@ class Options(usage.Options):
         self.opts = launcher.Options()
         self.opts.parseOptions(sparkOpts)
 
-        self.appName = appName
+        self.appName = launcher.getModule(appName)
         self.module = __import__(self.appName)
 
         if hasattr(self.module, 'Options'):

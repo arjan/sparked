@@ -80,7 +80,7 @@ def splitOptions(args):
     return (args[0:i], app, args[i+1:])
 
 
-def launch(baseOptions):
+def launch(baseOptions, env):
     argv = []
     argv.append("twistd")
     argv.append("--pidfile")
@@ -91,17 +91,16 @@ def launch(baseOptions):
     argv.append('spark')
     argv = argv + sys.argv[1:]
 
-    env = os.environ
     return subprocess.call(argv, env=env)
 
 
-def launchLoop(app, options):
+def launchLoop(app, options, env):
     quitFlag = QuitFlag(app)
     quitFlag.reset()
     respawned = False
     while True:
         start = time.time()
-        launch(options)
+        launch(options, env)
         if time.time() - start < 5:
             if respawned:
                 print "*** %s: respawning too fast ***" % app
@@ -114,7 +113,19 @@ def launchLoop(app, options):
 
 
 
+def getModule(app):
+    if app[-3:] == ".py" and os.path.exists(app):
+        path = os.path.dirname(app)
+        if not path: path = "."
+        sys.path.insert(0, path)
+        app = os.path.basename(app)[:-3]
+    return app
+
+
+
 def main():
+
+    env = os.environ
 
     try:
 
@@ -124,6 +135,8 @@ def main():
 
         if not app:
             options.opt_help()
+
+        app = getModule(app)
 
         try:
             appModule = __import__(app)
@@ -144,9 +157,9 @@ def main():
 
 
         if options['no-respawn']:
-            launch(options)
+            launch(options, env)
         else:
-            launchLoop(app, options)
+            launchLoop(app, options, env)
 
 
     except usage.UsageError, errortext:

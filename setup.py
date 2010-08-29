@@ -13,6 +13,13 @@ import subprocess
 import spark
 from twisted.python import procutils
 
+
+def refresh_plugin_cache():
+    from twisted.plugin import IPlugin, getPlugins
+    list(getPlugins(IPlugin))
+
+
+
 setup(
     name = "spark",
     version = spark.__version__,
@@ -28,9 +35,12 @@ setup(
                 'spark.hardware',
                 'spark.test',
                 'twisted.plugins'],
-    package_data = {'twisted': ['plugins/spark.py']},
+    package_data={'twisted.plugins': ['twisted/plugins/spark.py']},
 
     long_description = """   """,
+      install_requires = [
+      'Twisted>=8.0'
+      ],
     classifiers = [
         "Framework :: Twisted",
         "Intended Audience :: Developers",
@@ -42,19 +52,20 @@ setup(
         ]
     )
 
-# if sys.argv[1] == "build":
-#     commands = [
-#         'help2man --no-info --include=man-osc-send.txt --no-discard-stderr --name="sends an OSC message" ./scripts/osc-send --output=osc-send.1',
-#         'help2man --no-info --include=man-osc-receive.txt --no-discard-stderr --name="receives OSC messages" ./scripts/osc-receive --output=osc-receive.1',
-#         ]
-#     if os.path.exists("man-osc-send.txt"):
-#         try:
-#             help2man = procutils.which("help2man")[0]
-#         except IndexError:
-#             print("Cannot build the man pages. help2man was not found.")
-#         else:
-#             for c in commands:
-#                 print("$ %s" % (c))
-#                 retcode = subprocess.call(c, shell=True)
-#                 print("The help2man command returned %s" % (retcode))
+refresh_plugin_cache()
+
+if sys.argv[1] == "build":
+    commands = [
+        'help2man --no-info --include=man-spark.txt --name="The spark application launcher" ./bin/spark --output=spark.1',
+        ]
+    if os.path.exists("man-spark.txt"):
+        try:
+            help2man = procutils.which("help2man")[0]
+        except IndexError:
+            print("Cannot build the man pages. help2man was not found.")
+        else:
+            for c in commands:
+                print("$ %s" % (c))
+                retcode = subprocess.call(c, shell=True)
+                print("The help2man command returned %s" % (retcode))
 
