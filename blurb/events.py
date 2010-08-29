@@ -1,12 +1,15 @@
-#!/usr/bin/env python
-# -*- test-case-name: blurb.test.test_events -*-
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
+# -*- test-case-name: blurb.test.test_events -*-
+
+"""
+Classes which define a generic event system.
+"""
 
 
 class Event(object):
     """
-    a generic event class.
+    A generic event class.
     """
     def __init__(self, **kw):
         self.__dict__.update(kw)
@@ -34,7 +37,7 @@ class EventGroup(object):
         """
         Add an even listener function
         @param f: the function
-        @param *a: Optional list of L{Event} classes to filter events on
+        @param a: Optional list of L{Event} classes to filter events on
         """
         if len(a):
             self.listeners.append( (f, a) )

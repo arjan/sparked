@@ -1,19 +1,29 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
-import sys
+"""
+The blurb application launcher.
+
+Blurb applications are launched in a subprocess: so that if the
+application crashes, it is started again.
+"""
+
 import os
-import tempfile
 import subprocess
+import sys
+import tempfile
+import time
 
 from twisted.python import usage
 
-from blurb import application, __version__
+from blurb import __version__
 
 
 class Options(usage.Options):
 
-    optFlags = [["debug", "d", "Debug mode"]]
+    optFlags = [["debug", "d", "Debug mode"],
+                ["no-respawn", "N", "Do not respawn on crash"],
+                ]
 
     optParameters = [
             ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<application>.pid')
@@ -25,6 +35,35 @@ class Options(usage.Options):
 
     def getSynopsis(self):
         return usage.Options.getSynopsis(self) + " <application> [app_options]"
+
+
+
+class QuitFlag:
+
+    def __init__(self):
+        pid, self.file = tempfile.mkstemp()
+        os.close(pid)
+
+
+    def set(self):
+        f = open(self.file, "w")
+        f.write("quit")
+        f.close()
+
+
+    def reset(self):
+        try:
+            os.unlink(self.file)
+        except:
+            pass
+
+
+    def isSet(self):
+        try:
+            return open(self.file, "r").readlines()[0] == "quit"
+        except:
+            return False
+
 
 
 
@@ -52,6 +91,24 @@ def launch(baseOptions):
     return subprocess.call(argv, env=env)
 
 
+def launchLoop(app, options):
+    quitFlag.reset()
+    respawned = False
+    while True:
+        start = time.time()
+        launch(options)
+        if time.time() - start < 5:
+            if respawned:
+                print "*** %s: respawning too fast ***" % app
+            break
+        if quitFlag.isSet():
+            break
+        respawned = True
+
+    quitFlag.reset()
+
+
+
 def main():
 
     try:
@@ -68,21 +125,25 @@ def main():
         except ImportError:
             raise usage.UsageError("Application not found: " + app)
 
-        if getattr(appModule, 'Options'):
+        if hasattr(appModule, 'Options'):
             opts = appModule.Options()
             opts.parseOptions(appOpts)
-
-        appInstance = appModule.Application(options, opts)
-        if not isinstance(appInstance, application.Application):
-            raise usage.Usage("Invalid application module: " + appModule)
 
         if not options['pidfile']:
             options['pidfile'] = os.path.join(tempfile.gettempdir(), app + ".pid")
 
-        launch(options)
+
+        if options['no-respawn']:
+            launch(options)
+        else:
+            launchLoop(app, options)
 
 
     except usage.UsageError, errortext:
         print '%s: %s' % (sys.argv[0], errortext)
         print '%s: Try --help for usage details.' % (sys.argv[0])
         sys.exit(1)
+
+
+
+quitFlag = QuitFlag()

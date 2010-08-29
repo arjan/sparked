@@ -1,6 +1,10 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+"""
+A status window for the Blurb application.
+"""
+
 from datetime import datetime
 import gtk
 

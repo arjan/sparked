@@ -22,7 +22,7 @@ class Options(usage.Options):
         self.appName = appName
         self.module = __import__(self.appName)
 
-        if getattr(self.module, 'Options'):
+        if hasattr(self.module, 'Options'):
             self.appOpts = self.module.Options()
             self.appOpts.parseOptions(appOpts)
         else:
@@ -34,8 +34,15 @@ def makeService(config):
     # Create dbus mainloop
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
+    # Check if it is the right thing
+    if not hasattr(config.module, 'Application'):
+        raise usage.UsageError("Invalid application module: " + config.appName)
+
+
     # Instantiate the main application
     s = config.module.Application(config.opts, config.appOpts)
+
+
 
     # Set the name
     s.setName(config.appName)

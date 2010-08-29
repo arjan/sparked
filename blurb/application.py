@@ -11,7 +11,7 @@ from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import gui, stage, monitors
+from blurb import gui, stage, monitors, launcher
 
 
 class Application(service.MultiService):
@@ -69,11 +69,28 @@ class Application(service.MultiService):
 
 
     def createStatusWindow(self):
+        """
+        Create the status window
+
+        If your application does not need a status window, override
+        this method in your application's subclass and return
+        C{False}. This removes the dependency on the C{gtk} library.
+        """
         return gui.StatusWindow(self)
 
 
     def createStage(self):
-        return stage.Stage(self)
+        """
+        Create the graphics stage.
+
+        If your application does not need a graphics stage, override
+        this method in your application's subclass and return
+        C{False}. This removes the dependency on the C{clutter} library.
+        """
+        s = stage.Stage(self)
+        if not self.baseOpts['debug']:
+            s.toggleFullscreen()
+        return s
 
 
     def createMonitors(self):
@@ -85,6 +102,9 @@ class Application(service.MultiService):
         m.setServiceParent(self)
         return m
 
+
+    def stopService(self):
+        launcher.quitFlag.set()
 
 
 class StateMachine (object):
