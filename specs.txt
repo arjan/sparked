@@ -24,41 +24,46 @@ DONE:
 * usage: blurb [blurb options] <plugin> [plugin options]
 
 
-
-TO DO:
----------------------------------------------------------------
-
 * graphics display (clutter), easy fullscreen
-* graphics widget library (mxpy)
-* onscreen keyboard
-* GUI window
+* GUI status window
   - system status area
   - log area
 
 
-hardware.pnp       -- plug & play of devices
-hardware.protocols -- various hardware protocols
+hardware.hal       -- plug & play of devices
 
 monitors
  - network
  - power
 
+* system sanity checking
+  - internet connection
+  - power connection
+  - easy-to-write custom sanity checks
+
+
+
+TO DO:
+---------------------------------------------------------------
+
+* graphics widget library (mxpy)
+* onscreen keyboard
+
+
+hardware.protocols -- various hardware protocols
+
+
 
 * hardware detection plug and play
-  - serial ports
   - webcams
   - rfid readers
   - HID devices
+  - serial ports
   - automatic mapping of detected hardware onto service classes;
     protocol sniffing / probing for serial devices
 
 * remote control (OSC)
   standard interface into the machine state and connected devices
-
-* system sanity checking
-  - internet connection
-  - power connection
-  - easy-to-write custom sanity checks
 
 * easy to write and plug own services
   - based on hardware
