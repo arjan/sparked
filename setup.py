@@ -66,6 +66,5 @@ if sys.argv[1] == "build":
         else:
             for c in commands:
                 print("$ %s" % (c))
-                retcode = subprocess.call(c, shell=True)
-                print("The help2man command returned %s" % (retcode))
+                subprocess.call(c, shell=True)
 
