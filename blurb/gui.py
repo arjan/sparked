@@ -50,11 +50,12 @@ class StatusWindow (gtk.Window):
             self.box.pack_start(w, False, False, 0)
 
         self.add(self.box)
-        self.set_size_request(500, 300)
+        self.set_size_request(720, 300)
         self.show_all()
 
 
     def closed(self, window):
+        log.removeObserver(self.log)
         guiEvents.sendEvent(StatusWindowClosed(window=window))
 
 

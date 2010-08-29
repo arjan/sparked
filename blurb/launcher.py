@@ -40,9 +40,8 @@ class Options(usage.Options):
 
 class QuitFlag:
 
-    def __init__(self):
-        pid, self.file = tempfile.mkstemp()
-        os.close(pid)
+    def __init__(self, app):
+        self.file = os.path.join(tempfile.gettempdir(), app+".quit")
 
 
     def set(self):
@@ -92,6 +91,7 @@ def launch(baseOptions):
 
 
 def launchLoop(app, options):
+    quitFlag = QuitFlag(app)
     quitFlag.reset()
     respawned = False
     while True:
@@ -145,5 +145,3 @@ def main():
         sys.exit(1)
 
 
-
-quitFlag = QuitFlag()

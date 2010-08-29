@@ -11,7 +11,7 @@ from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import gui, stage, monitors, launcher
+from blurb import gui, stage, monitors
 
 
 class Application(service.MultiService):
@@ -23,6 +23,7 @@ class Application(service.MultiService):
     @ivar state: A L{StateMachine} instance which represents the main state of the Blurb application.
     @ivar baseOpts: the basic options that are given on the blurb commandline; instance of L{blurb.launcher.Options}.
     @ivar appOpts: the additional applocation commandline options; instance of your application's C{yourapplication.Options}.
+    @ivar quitFlag: A L{launcher.QuitFlag} instance controlling the clean shutdown of the program. Set by L{tap.makeService}.
 
     @ivar title:  The human-readable title of the application.
 
@@ -34,6 +35,7 @@ class Application(service.MultiService):
     state = None
     baseOpts = None
     appOpts = None
+    quitFlag = None
 
     title = "Untitled"
 
@@ -104,7 +106,7 @@ class Application(service.MultiService):
 
 
     def stopService(self):
-        launcher.quitFlag.set()
+        self.quitFlag.set()
 
 
 class StateMachine (object):

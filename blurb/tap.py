@@ -46,7 +46,8 @@ def makeService(config):
     # Instantiate the main application
     s = config.module.Application(config.opts, config.appOpts)
 
-
+    # Set quitflag 
+    s.quitFlag = launcher.QuitFlag(config.appName)
 
     # Set the name
     s.setName(config.appName)
