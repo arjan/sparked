@@ -1,6 +1,14 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+"""
+A grapihical window implemented using the
+U{clutter<http://www.clutter-project.org/>} library, for interactive
+displays.
+
+F11 toggles fullscreen.
+"""
+
 import gtk
 import clutter
 

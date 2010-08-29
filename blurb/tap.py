@@ -1,6 +1,10 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+"""
+Twisted Application Persistence package for the startup of the twisted blurb plugin.
+"""
+
 import tempfile
 import dbus.mainloop.glib
 

@@ -1,5 +1,10 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
+# -*- test-case-name: blurb.test.test_monitors -*-
+
+"""
+Classes for monitoring the system's state.
+"""
 
 from twisted.application import service
 
