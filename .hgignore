@@ -8,4 +8,5 @@ dist
 *.1
 html
 *.swp
+blurb.egg-info
 

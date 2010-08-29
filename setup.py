@@ -1,7 +1,11 @@
 #!/usr/bin/env python
+# Copyright (c) 2010 Arjan Scherpenisse
+# See LICENSE for details.
+
 """
 blurb installation script
 """
+
 from setuptools import setup
 import os
 import sys
@@ -20,10 +24,12 @@ setup(
         "bin/blurb"
         ],
     license="MIT/X",
-    packages = ["blurb",
-                "blurb/test",
-                "blurb/hardware"
-                ],
+    packages = ['blurb',
+                'blurb.hardware',
+                'blurb.test',
+                'twisted.plugins'],
+    package_data = {'twisted': ['plugins/blurb.py']},
+
     long_description = """   """,
     classifiers = [
         "Framework :: Twisted",
