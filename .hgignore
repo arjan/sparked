@@ -3,4 +3,9 @@ syntax: glob
 _trial_temp
 *.pyc
 dropin.cache
+build
+dist
+*.1
+html
+*.swp
 

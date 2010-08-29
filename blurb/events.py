@@ -31,6 +31,11 @@ class EventGroup(object):
 
 
     def addEventListener(self, f, *a):
+        """
+        Add an even listener function
+        @param f: the function
+        @param *a: Optional list of L{Event} classes to filter events on
+        """
         if len(a):
             self.listeners.append( (f, a) )
         else:

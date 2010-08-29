@@ -42,7 +42,7 @@ class Monitor(object):
     """
     A generic monitor
 
-    @ivar ok  Boolean flag which tells if the monitor's state is 'ok' or not.
+    @ivar ok:  Boolean flag which tells if the monitor's state is 'ok' or not.
     """
 
     ok = False

@@ -13,7 +13,7 @@ from blurb import events
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{dispatch.AddressNode}; adding/removing/dispatching callbacks, wildcard matching.
+    Test the L{blurb.events.EventGroup}
     """
 
     def testGroup(self):
@@ -59,11 +59,6 @@ class TestEventGroup(unittest.TestCase):
  
 
 
-    def testEvent(self):
-        self.assertEquals(events.Event(foo="bar"), events.Event(foo="bar"))
-        self.assertNotEquals(events.Event(foo="bar", baz="hi"), events.Event(foo="bar"))
-
-
     def testGroupInstance(self):
 
         g = events.EventGroup()
@@ -91,4 +86,15 @@ class TestEventGroup(unittest.TestCase):
 
         g.sendEvent(MyEvent())
         self.assertEquals(r.rcv, ["hello", MyEvent(), MyEvent()])
+
+
+
+class TestEvent(unittest.TestCase):
+    """
+    Test the L{blurb.events.Event}
+    """
+
+    def testEquality(self):
+        self.assertEquals(events.Event(foo="bar"), events.Event(foo="bar"))
+        self.assertNotEquals(events.Event(foo="bar", baz="hi"), events.Event(foo="bar"))
 

@@ -20,14 +20,14 @@ class Application(service.MultiService):
 
     Blurb applications inherit from this class.
 
-    @ivar state A L{StateMachine} instance which represents the main state of the Blurb application.
-    @ivar baseOpts the basic options that are given on the blurb commandline; instance of L{blurb.launcher.Options}.
-    @ivar appOpts the additional applocation commandline options; instance of L{yourapplication.Options}
+    @ivar state: A L{StateMachine} instance which represents the main state of the Blurb application.
+    @ivar baseOpts: the basic options that are given on the blurb commandline; instance of L{blurb.launcher.Options}.
+    @ivar appOpts: the additional applocation commandline options; instance of your application's C{yourapplication.Options}.
 
-    @ivar title  The human-readable title of the application.
+    @ivar title:  The human-readable title of the application.
 
-    @ivar statusWindow  the status window with information about the applictaion.
-    @ivar stage         the stage for the display of graphics
+    @ivar statusWindow:  the status window with information about the applictaion.
+    @ivar stage:         the stage for the display of graphics
     """
 
     state = None

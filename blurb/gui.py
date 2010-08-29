@@ -42,7 +42,7 @@ class StatusWindow (gtk.Window):
         """
         Log observer that writes into the log scroller area of the UI.
 
-        This method implements L{log.ILogObserver}.
+        This method implements C{twisted.python.log.ILogObserver}.
         """
         b = self.log_area.get_buffer()
 
