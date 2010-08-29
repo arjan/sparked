@@ -11,17 +11,17 @@ from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import gui, stage, monitors
+from spark import gui, stage, monitors
 
 
 class Application(service.MultiService):
     """
-    The blurb base class.
+    The spark base class.
 
-    Blurb applications inherit from this class.
+    Spark applications inherit from this class.
 
-    @ivar state: A L{StateMachine} instance which represents the main state of the Blurb application.
-    @ivar baseOpts: the basic options that are given on the blurb commandline; instance of L{blurb.launcher.Options}.
+    @ivar state: A L{StateMachine} instance which represents the main state of the Spark application.
+    @ivar baseOpts: the basic options that are given on the spark commandline; instance of L{spark.launcher.Options}.
     @ivar appOpts: the additional applocation commandline options; instance of your application's C{yourapplication.Options}.
     @ivar quitFlag: A L{launcher.QuitFlag} instance controlling the clean shutdown of the program. Set by L{tap.makeService}.
 

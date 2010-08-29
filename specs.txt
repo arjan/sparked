@@ -11,7 +11,7 @@ DONE:
 
 * eventing system
   - using python decorators?
-  - grouped into the different blurb subsystems:
+  - grouped into the different subsystems:
    - hardware
    - gui
    - osc
@@ -21,7 +21,7 @@ DONE:
   - --debug flag toggles log level
   - restart on crash 
   
-* usage: blurb [blurb options] <plugin> [plugin options]
+* usage: spark [spark options] <application> [app options]
 
 
 * graphics display (clutter), easy fullscreen

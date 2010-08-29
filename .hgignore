@@ -8,5 +8,5 @@ dist
 *.1
 html
 *.swp
-blurb.egg-info
+spark.egg-info
 

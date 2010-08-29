@@ -2,18 +2,18 @@
 # See LICENSE for details.
 
 """
-Tests for blurb.monitors.*
+Tests for spark.monitors.*
 
 Maintainer: Arjan Scherpenisse
 """
 
 from twisted.trial import unittest
 
-from blurb import monitors
+from spark import monitors
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{blurb.events.EventGroup}
+    Test the L{spark.events.EventGroup}
     """
 
     def testAdd(self):

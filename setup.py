@@ -3,32 +3,32 @@
 # See LICENSE for details.
 
 """
-blurb installation script
+spark installation script
 """
 
 from setuptools import setup
 import os
 import sys
 import subprocess
-import blurb
+import spark
 from twisted.python import procutils
 
 setup(
-    name = "blurb",
-    version = blurb.__version__,
+    name = "spark",
+    version = spark.__version__,
     author = "Arjan Scherpenisse",
     author_email = "arjan@scherpenisse.net",
-    url = "http://bitbucket.org/arjan/blurb",
+    url = "http://bitbucket.org/arjan/spark",
     description = "Application development framework for interactive installations",
     scripts = [
-        "bin/blurb"
+        "bin/spark"
         ],
     license="MIT/X",
-    packages = ['blurb',
-                'blurb.hardware',
-                'blurb.test',
+    packages = ['spark',
+                'spark.hardware',
+                'spark.test',
                 'twisted.plugins'],
-    package_data = {'twisted': ['plugins/blurb.py']},
+    package_data = {'twisted': ['plugins/spark.py']},
 
     long_description = """   """,
     classifiers = [

@@ -2,7 +2,7 @@
 # See LICENSE for details.
 
 """
-A status window for the Blurb application.
+A status window for the Spark application.
 """
 
 from datetime import datetime
@@ -10,14 +10,14 @@ import gtk
 
 from twisted.python import log
 
-from blurb import events
+from spark import events
 
 class StatusWindowClosed(events.Event):
     pass
 
 class StatusWindow (gtk.Window):
     """
-    The status window for the blurb application.
+    The status window for the spark application.
     Contains the log area
     """
 

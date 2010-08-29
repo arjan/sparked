@@ -1,10 +1,10 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 #
-# Example runner class for blurb.
+# Example runner class for spark.
 
 from twisted.python import usage
-from blurb import application
+from spark import application
 
 class Options(usage.Options):
     optFlags = [["fast", "f", "Run fast"]]
@@ -12,7 +12,7 @@ class Options(usage.Options):
 
 class Application(application.Application):
 
-    title = "Blurb example"
+    title = "Spark example"
 
     def startService(self):
         application.Application.startService(self)

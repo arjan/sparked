@@ -1,6 +1,6 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
-# -*- test-case-name: blurb.test.test_events -*-
+# -*- test-case-name: spark.test.test_events -*-
 
 """
 Classes which define a generic event system.

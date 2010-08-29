@@ -2,10 +2,10 @@
 # See LICENSE for details.
 
 """
-Blurb
+Spark
 =====
 
-  Blurb is an Application Development Framework for creating reliable
+  Spark is an Application Development Framework for creating reliable
   interactive installations. It has the following features:
 
    - B{reliability} - based on the

@@ -2,7 +2,7 @@
 # See LICENSE for details.
 
 """
-Twisted Application Persistence package for the startup of the twisted blurb plugin.
+Twisted Application Persistence package for the startup of the twisted spark plugin.
 """
 
 import tempfile
@@ -14,14 +14,14 @@ from twisted.python import log
 from twisted.python.filepath import FilePath
 from twisted.python.logfile import LogFile
 
-from blurb import launcher
+from spark import launcher
 
 
 class Options(usage.Options):
     def parseOptions(self, o):
-        blurbOpts, appName, appOpts = launcher.splitOptions(o)
+        sparkOpts, appName, appOpts = launcher.splitOptions(o)
         self.opts = launcher.Options()
-        self.opts.parseOptions(blurbOpts)
+        self.opts.parseOptions(sparkOpts)
 
         self.appName = appName
         self.module = __import__(self.appName)

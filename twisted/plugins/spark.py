@@ -3,8 +3,8 @@
 
 from twisted.application.service import ServiceMaker
 
-Blurb = ServiceMaker(
-        "Blurb",
-        "blurb.tap",
-        "Blurb application launcher",
-        "blurb")
+Spark = ServiceMaker(
+        "Spark",
+        "spark.tap",
+        "Spark application launcher",
+        "spark")

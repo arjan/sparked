@@ -2,18 +2,18 @@
 # See LICENSE for details.
 
 """
-Tests for blurb.events.*
+Tests for spark.events.*
 
 Maintainer: Arjan Scherpenisse
 """
 
 from twisted.trial import unittest
 
-from blurb import events
+from spark import events
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{blurb.events.EventGroup}
+    Test the L{spark.events.EventGroup}
     """
 
     def testGroup(self):
@@ -91,7 +91,7 @@ class TestEventGroup(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     """
-    Test the L{blurb.events.Event}
+    Test the L{spark.events.Event}
     """
 
     def testEquality(self):

@@ -2,9 +2,9 @@
 # See LICENSE for details.
 
 """
-The blurb application launcher.
+The spark application launcher.
 
-Blurb applications are launched in a subprocess: so that if the
+Spark applications are launched in a subprocess: so that if the
 application crashes, it is started again.
 """
 
@@ -16,7 +16,7 @@ import time
 
 from twisted.python import usage
 
-from blurb import __version__
+from spark import __version__
 
 
 class Options(usage.Options):
@@ -31,7 +31,7 @@ class Options(usage.Options):
 
 
     def opt_version(self):
-        print "Blurb", __version__
+        print "spark", __version__
 
     def getSynopsis(self):
         return usage.Options.getSynopsis(self) + " <application> [app_options]"
@@ -83,7 +83,7 @@ def launch(baseOptions):
     argv.append('-r')
     argv.append('gtk2')
     argv.append('-n')
-    argv.append('blurb')
+    argv.append('spark')
     argv = argv + sys.argv[1:]
 
     env = os.environ
@@ -114,8 +114,8 @@ def main():
     try:
 
         options = Options()
-        blurbOpts, app, appOpts = splitOptions(sys.argv[1:])
-        options.parseOptions(blurbOpts)
+        sparkOpts, app, appOpts = splitOptions(sys.argv[1:])
+        options.parseOptions(sparkOpts)
 
         if not app:
             options.opt_help()

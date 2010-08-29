@@ -12,7 +12,7 @@ F11 toggles fullscreen.
 import gtk
 import clutter
 
-from blurb import events
+from spark import events
 
 class StageClosed(events.Event):
     pass

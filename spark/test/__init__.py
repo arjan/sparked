@@ -2,5 +2,5 @@
 # See LICENSE for details.
 
 """
-Unit tests for everything blurb.
+Unit tests for everything spark.
 """

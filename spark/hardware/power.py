@@ -9,7 +9,7 @@ fires an event when the power becomes critically low.
 import dbus
 
 from twisted.application import service
-from blurb import events
+from spark import events
 
 
 
