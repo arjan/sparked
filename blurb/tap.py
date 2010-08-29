@@ -5,29 +5,28 @@ import tempfile
 import dbus.mainloop.glib
 
 from twisted.python import usage
-from twisted.internet import reactor
 
 from twisted.python import log
 from twisted.python.filepath import FilePath
 from twisted.python.logfile import LogFile
 
-from blurb import launcher, base
+from blurb import launcher
 
 
 class Options(usage.Options):
     def parseOptions(self, o):
-        blurbOpts, pluginName, pluginOpts = launcher.splitOptions(o)
+        blurbOpts, appName, appOpts = launcher.splitOptions(o)
         self.opts = launcher.Options()
         self.opts.parseOptions(blurbOpts)
 
-        self.pluginName = pluginName
-        self.module = __import__(self.pluginName)
+        self.appName = appName
+        self.module = __import__(self.appName)
 
         if getattr(self.module, 'Options'):
-            self.pluginOpts = self.module.Options()
-            self.pluginOpts.parseOptions(pluginOpts)
+            self.appOpts = self.module.Options()
+            self.appOpts.parseOptions(appOpts)
         else:
-            self.pluginOpts = usage.Options()
+            self.appOpts = usage.Options()
 
 
 def makeService(config):
@@ -35,15 +34,18 @@ def makeService(config):
     # Create dbus mainloop
     dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
 
-    # Instantiate the main plugin
-    s = config.module.Blurb(config.opts, config.pluginOpts)
+    # Instantiate the main application
+    s = config.module.Application(config.opts, config.appOpts)
 
-    # Set up logging in ~/log/ikpoll.log, maximum 9 rotated log files.
+    # Set the name
+    s.setName(config.appName)
+
+    # Set up logging in /tmp/log, maximum 9 rotated log files.
     if not config.opts['debug']:
         logDir = FilePath(tempfile.gettempdir()).child('log')
         if not logDir.exists():
             logDir.createDirectory()
-        logfile = config.pluginName.replace(".", "_") + ".log"
+        logfile = config.appName + ".log"
         logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
         log.addObserver(log.FileLogObserver(logFile).emit)
 

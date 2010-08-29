@@ -1,40 +1,50 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+"""
+The base application class.
+"""
+
 import time
 
 from twisted.application import service
 from twisted.python import log
 from twisted.internet import reactor
 
-from blurb import events, gui, stage, monitors
+from blurb import gui, stage, monitors
 
 
-class Blurb(service.MultiService):
+class Application(service.MultiService):
     """
     The blurb base class.
 
-    All blurb plugins inherit from this class.
+    Blurb applications inherit from this class.
 
     @ivar state A L{StateMachine} instance which represents the main state of the Blurb application.
     @ivar baseOpts the basic options that are given on the blurb commandline; instance of L{blurb.launcher.Options}.
-    @ivar pluginOpts the additional plugin commandline options; instance of L{yourplugin.Options}
+    @ivar appOpts the additional applocation commandline options; instance of L{yourapplication.Options}
+
+    @ivar title  The human-readable title of the application.
+
+    @ivar statusWindow  the status window with information about the applictaion.
+    @ivar stage         the stage for the display of graphics
     """
 
     state = None
     baseOpts = None
-    pluginOpts = None
+    appOpts = None
 
+    title = "Untitled"
 
     statusWindow = None
     stage = None
 
 
-    def __init__(self, baseOpts, pluginOpts):
+    def __init__(self, baseOpts, appOpts):
         service.MultiService.__init__(self)
 
         self.baseOpts = baseOpts
-        self.pluginOpts = pluginOpts
+        self.appOpts = appOpts
 
         self.state = StateMachine(self)
 

@@ -20,10 +20,12 @@ class Stage (clutter.Stage):
         self.app = app
         self.app.state.addListener(self)
         self.show()
-        self.set_title("Blurb - Stage")
+        self.set_title(app.title + " - Graphics")
 
         self.connect("destroy", lambda _: stageEvents.sendEvent(StageClosed(stage=self)))
         self.connect("key-press-event", self.keyPress)
+
+        #print self.x11_get_window()
 
 
     def keyPress(self, actor, event):

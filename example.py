@@ -4,17 +4,29 @@
 # Example runner class for blurb.
 
 from twisted.python import usage
-from blurb import base
+from blurb import application
 
 class Options(usage.Options):
     optFlags = [["fast", "f", "Run fast"]]
 
 
-class Blurb(base.Blurb):
+class Application(application.Application):
+
+    title = "Blurb example"
+
+    def startService(self):
+        application.Application.startService(self)
+
+        if self.appOpts['fast']:
+            self.delay = 1
+        else:
+            self.delay = 10
+
 
     def enter_start(self):
-        self.state.setAfter("ping", 10)
+        self.state.setAfter("ping", self.delay)
+
 
     def enter_ping(self):
-        self.state.setAfter("start", 10)
+        self.state.setAfter("start", self.delay)
 

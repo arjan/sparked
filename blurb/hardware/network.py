@@ -71,7 +71,6 @@ class NetworkWebConnectionService(service.Service):
     def loop(self):
         d = client.getPage(self.url)
         def ok(_):
-            print 123
             if not self.connected:
                 networkEvents.sendEvent(NetworkWebConnectionEvent(connected=True))
             self.connected = True

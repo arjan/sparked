@@ -2,15 +2,13 @@
 # See LICENSE for details.
 
 import sys
-import cPickle
-import base64
 import os
 import tempfile
 import subprocess
 
 from twisted.python import usage
 
-from blurb import base, __version__
+from blurb import application, __version__
 
 
 class Options(usage.Options):
@@ -18,7 +16,7 @@ class Options(usage.Options):
     optFlags = [["debug", "d", "Debug mode"]]
 
     optParameters = [
-            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<pluginname>.pid')
+            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<application>.pid')
             ]
 
 
@@ -26,20 +24,20 @@ class Options(usage.Options):
         print "Blurb", __version__
 
     def getSynopsis(self):
-        return usage.Options.getSynopsis(self) + " <plugin> [plugin_options]"
+        return usage.Options.getSynopsis(self) + " <application> [app_options]"
 
 
 
 def splitOptions(args):
     try:
-        plugin = [a for a in args if a[0] != "-"][0]
+        app = [a for a in args if a[0] != "-"][0]
     except IndexError:
         return args, None, []
-    i = args.index(plugin)
-    return (args[0:i], plugin, args[i+1:])
+    i = args.index(app)
+    return (args[0:i], app, args[i+1:])
 
 
-def launch(pluginName, baseOptions):
+def launch(baseOptions):
     argv = []
     argv.append("twistd")
     argv.append("--pidfile")
@@ -59,29 +57,29 @@ def main():
     try:
 
         options = Options()
-        blurbOpts, pluginName, pluginOpts = splitOptions(sys.argv[1:])
+        blurbOpts, app, appOpts = splitOptions(sys.argv[1:])
         options.parseOptions(blurbOpts)
 
-        if not pluginName:
+        if not app:
             options.opt_help()
 
         try:
-            pluginModule = __import__(pluginName)
+            appModule = __import__(app)
         except ImportError:
-            raise usage.UsageError("Plugin not found: " + pluginName)
+            raise usage.UsageError("Application not found: " + app)
 
-        if getattr(pluginModule, 'Options'):
-            opts = pluginModule.Options()
-            opts.parseOptions(pluginOpts)
+        if getattr(appModule, 'Options'):
+            opts = appModule.Options()
+            opts.parseOptions(appOpts)
 
-        pluginInstance = pluginModule.Blurb(options, opts)
-        if not isinstance(pluginInstance, base.Blurb):
-            raise usage.Usage("Invalid blurb plugin module: " + pluginModule)
+        appInstance = appModule.Application(options, opts)
+        if not isinstance(appInstance, application.Application):
+            raise usage.Usage("Invalid application module: " + appModule)
 
         if not options['pidfile']:
-            options['pidfile'] = os.path.join(tempfile.gettempdir(), pluginName.replace(".", "_") + ".pid")
+            options['pidfile'] = os.path.join(tempfile.gettempdir(), app + ".pid")
 
-        launch(pluginName, options)
+        launch(options)
 
 
     except usage.UsageError, errortext:

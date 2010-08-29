@@ -16,13 +16,13 @@ class StatusWindow (gtk.Window):
     The status window for the blurb application.
     Contains the log area
     """
-    
+
     maxLogLines = 2000
 
     def __init__(self, app):
         gtk.Window.__init__(self)
         self.app = app
-        self.set_title("Blurb - Status window")
+        self.set_title(app.title + " - Status window")
         self.connect("destroy", self.closed)
 
         self.log_area = gtk.TextView()
