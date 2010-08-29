@@ -29,13 +29,30 @@ class StatusWindow (gtk.Window):
         self.set_title(app.title + " - Status window")
         self.connect("destroy", self.closed)
 
+        self.build()
+        log.addObserver(self.log)
+
+
+    def build(self):
+        """
+        Create the status window
+        """
+        self.box = gtk.HBox()
         self.log_area = gtk.TextView()
         w = gtk.ScrolledWindow()
         w.add(self.log_area)
-        self.add(w)
+
+        self.box.pack_end(w, True, True, 0)
+
+        if self.app.monitors:
+            # Create the monitor widget and connect
+            w = MonitorWidget()
+            self.app.monitors.events.addEventListener(w.refresh)
+            self.box.pack_start(w, False, False, 0)
+
+        self.add(self.box)
         self.set_size_request(500, 300)
         self.show_all()
-        log.addObserver(self.log)
 
 
     def closed(self, window):
@@ -61,6 +78,38 @@ class StatusWindow (gtk.Window):
             to  = b.get_iter_at_line(b.get_line_count() - self._max_log_lines)
             b.delete(frm, to)
         self.log_area.scroll_to_iter(b.get_end_iter(), 0.0)
+
+
+
+class MonitorWidget(gtk.VBox):
+
+    stock_map = { True: "gtk-apply",
+                  False: "gtk-stop"
+                  }
+
+    def __init__(self):
+        gtk.VBox.__init__(self)
+        self.set_property("width_request", 300)
+
+    def refresh(self, e):
+
+        for c in self.get_children():
+            self.remove(c)
+
+        for c in e.container.monitors:
+            v = gtk.HBox()
+            l = gtk.Label(c.title)
+            l.set_property("xalign", 0)
+            v.pack_start(l, True, True, 10)
+
+            im = gtk.Image()
+            im.set_from_stock(self.stock_map[c.ok], gtk.ICON_SIZE_MENU)
+            v.pack_start(im, False, True, 10)
+
+            self.pack_start(v, False, False, 10)
+            self.pack_start(gtk.HSeparator(), False, True, 0)
+
+        self.show_all()
 
 
 guiEvents = events.EventGroup()

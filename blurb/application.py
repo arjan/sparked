@@ -26,6 +26,7 @@ class Application(service.MultiService):
 
     @ivar title:  The human-readable title of the application.
 
+    @ivar monitors:      the L{monitors.MonitorContainer} instance with system monitors.
     @ivar statusWindow:  the status window with information about the applictaion.
     @ivar stage:         the stage for the display of graphics
     """
@@ -36,6 +37,7 @@ class Application(service.MultiService):
 
     title = "Untitled"
 
+    monitors = None
     statusWindow = None
     stage = None
 
@@ -57,7 +59,7 @@ class Application(service.MultiService):
         Create all services and GUI objects as needed.
         """
 
-        self.monitor = self.createMonitors()
+        self.monitors = self.createMonitors()
 
         self.statusWindow = self.createStatusWindow()
         if self.statusWindow:

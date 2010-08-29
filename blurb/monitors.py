@@ -16,26 +16,35 @@ class MonitorEvent(events.Event):
 class MonitorContainer (service.MultiService):
     """
     A container for monitoring services.
+
+    @ivar monitors: A list of L{Monitor} objects.
+    @ivar events: An L{events.EventGroup} which triggers a L{MonitorEvent} when one of the monitors state changes.
     """
 
     monitors = None
+    events = None
 
     def __init__(self):
         service.MultiService.__init__(self)
+        self.events = events.EventGroup()
         self.monitors = []
 
 
     def addMonitor(self, monitor):
+        """
+        Add a monitor to the container, and notify that the monitor has changed.
+        """
         self.monitors.append(monitor)
         monitor.added(self)
+        self.ping()
 
 
     def ping(self):
         """
-        Notify the container that monitor state has been changed.
+        Notify the container that monitor state has been changed or the monitors have been modified.
         """
+        self.events.sendEvent(MonitorEvent(container=self))
 
-        print [(m.title, m.ok) for m in self.monitors]
 
 
 class Monitor(object):
@@ -87,6 +96,7 @@ class NetworkMonitor(Monitor):
         if e.connected != self.ok:
             self.ok = e.connected
             self.container.ping()
+
 
 
 class NetworkWebMonitor(Monitor):

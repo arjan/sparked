@@ -30,3 +30,6 @@ class Application(application.Application):
     def enter_ping(self):
         self.state.setAfter("start", self.delay)
 
+
+    def createStage(self):
+        return False
