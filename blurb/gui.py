@@ -46,8 +46,7 @@ class StatusWindow (gtk.Window):
 
         if self.app.monitors:
             # Create the monitor widget and connect
-            w = MonitorWidget()
-            self.app.monitors.events.addEventListener(w.refresh)
+            w = MonitorWidget(self.app.monitors)
             self.box.pack_start(w, False, False, 0)
 
         self.add(self.box)
@@ -82,17 +81,27 @@ class StatusWindow (gtk.Window):
 
 
 class MonitorWidget(gtk.VBox):
+    """
+    A widget which is tied to a L{monitors.MonitorContainer} object;
+    receiving updates as the monitors in the container change state.
+    It shows a list with the titles  and the state of each monitor.
+    """
 
     stock_map = { True: "gtk-apply",
                   False: "gtk-stop"
                   }
 
-    def __init__(self):
+
+    def __init__(self, container):
         gtk.VBox.__init__(self)
-        self.set_property("width_request", 300)
+        self.set_property("width_request", 240)
+        container.events.addEventListener(self.refresh)
+
 
     def refresh(self, e):
-
+        """
+        Refresh the state when a L{monitors.MonitorEvent} comes in.
+        """
         for c in self.get_children():
             self.remove(c)
 
