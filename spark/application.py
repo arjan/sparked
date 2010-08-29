@@ -117,7 +117,20 @@ class Options (usage.Options):
     Spark applications which need their own commandline arguments can
     inherit from this class: it takes care of the --version and --help
     arguments, using the __version__ and docstring from the spark
-    application.
+    application::
+
+      # spark example --version
+      example 0.1.0 (spark 0.1)
+
+      # spark example --help
+      spark [spark options] example [options]
+      Options:
+         -f, --fast   Run fast
+         --version
+         --help       Display this help and exit.
+
+      Example runner class for spark.
+
     """
 
     appName = None
