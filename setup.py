@@ -21,11 +21,11 @@ def refresh_plugin_cache():
 
 
 setup(
-    name = "spark",
+    name = "SparkFramework",
     version = spark.__version__,
     author = "Arjan Scherpenisse",
     author_email = "arjan@scherpenisse.net",
-    url = "http://bitbucket.org/arjan/spark",
+    url = "http://scherpenisse.net/spark",
     description = "Application development framework for interactive installations",
     scripts = [
         "bin/spark"
@@ -37,7 +37,18 @@ setup(
                 'twisted.plugins'],
     package_data={'twisted.plugins': ['twisted/plugins/spark.py']},
 
-    long_description = """   """,
+    long_description = """
+Like twisted, spark is a python library and an application runner in once. Some of its features follow here:
+
+ * Robust startup and restart of the program; if it crashes, it's started again.
+ * Logging: keeps a rotated logfile for debugging purposes.
+ * Pidfile management for making sure your app starts only once.
+ * A GUI status window (based on GTK) for monitoring the state of the application and the state of the system (network, power supply, ...). Easy to add your own monitors.
+ * Fullscreen graphics display for creating interactive displays, based on the clutter library.
+ * Eventing system for broadcasting messages between spark modules.
+ * A state machine for guiding the application through different states, with callback functions.
+
+    """,
       install_requires = [
       'Twisted>=8.0'
       ],
