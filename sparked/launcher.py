@@ -14,7 +14,9 @@ import sys
 import tempfile
 import time
 
-from twisted.python import usage
+from twisted.internet import reactor
+from twisted.python import usage, log
+from twisted.application import service, app
 
 from sparked import application, __version__
 
@@ -81,6 +83,21 @@ def splitOptions(args):
     return (args[0:i], app, args[i+1:])
 
 
+def run(appName):
+    application = service.Application(appName)
+    
+    from sparked import tap
+    config = tap.Options()
+    config.parseOptions(sys.argv[1:])
+    svc = tap.makeService(config)
+    svc.setServiceParent(application)
+        
+    app.startApplication(application, False)
+    log.addObserver(log.FileLogObserver(sys.stdout).emit)
+
+    reactor.run()
+
+
 def launch(baseOptions, env):
     argv = []
     argv.append("twistd")
@@ -131,37 +148,37 @@ def main():
     try:
 
         options = Options()
-        sparkedOpts, app, appOpts = splitOptions(sys.argv[1:])
+        sparkedOpts, appName, appOpts = splitOptions(sys.argv[1:])
         options.parseOptions(sparkedOpts)
 
-        if not app:
+        if not appName:
             options.opt_help()
 
-        app = getModule(app)
+        appName = getModule(appName)
 
         try:
-            appModule = __import__(app)
+            appModule = __import__(appName)
         except ImportError:
-            raise usage.UsageError("Application not found: " + app)
+            raise usage.UsageError("Application not found: " + appName)
 
         if hasattr(appModule, 'Options'):
             opts = appModule.Options()
         else:
             opts = application.Options()
-        opts.appName = app
+
+        opts.appName = appName
         if not hasattr(opts, 'longdesc'):
             opts.longdesc = appModule.__doc__
         opts.parseOptions(appOpts)
 
         if not options['pidfile']:
-            options['pidfile'] = os.path.join(tempfile.gettempdir(), app + ".pid")
+            options['pidfile'] = os.path.join(tempfile.gettempdir(), appName + ".pid")
 
 
         if options['no-subprocess']:
-            #launch(options, env)
-            print "FIXME"
+            run(appName)
         else:
-            launchLoop(app, options, env)
+            launchLoop(appName, options, env)
 
 
     except usage.UsageError, errortext:

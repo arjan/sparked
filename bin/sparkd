@@ -2,5 +2,8 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
+from twisted.internet import gtk2reactor
+gtk2reactor.install()
+
 from sparked.launcher import main
 main()

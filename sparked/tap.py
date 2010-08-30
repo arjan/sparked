@@ -58,10 +58,14 @@ def makeService(config):
 
     # Set up logging in /tmp/log, maximum 9 rotated log files.
     if not config.opts['debug']:
-        logDir = FilePath(tempfile.gettempdir()).child('log')
+        if config.opts['logfile']:
+            logfile = config.opts['logfile']
+            logDir = FilePath(logfile).parent()
+        else:
+            logfile = config.appName + '.log'
+            logDir = FilePath(tempfile.gettempdir()).child('log')
         if not logDir.exists():
             logDir.createDirectory()
-        logfile = config.appName + ".log"
         logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
         log.addObserver(log.FileLogObserver(logFile).emit)
 
