@@ -38,7 +38,7 @@ setup(
     package_data={'twisted.plugins': ['twisted/plugins/spark.py']},
 
     long_description = """
-Like twisted, spark is a python library and an application runner in once. Some of its features follow here:
+Like Twisted, Sparked is a python library and an application runner in once. Some of its features follow here:
 
  * Robust startup and restart of the program; if it crashes, it's started again.
  * Logging: keeps a rotated logfile for debugging purposes.
@@ -67,7 +67,7 @@ refresh_plugin_cache()
 
 if sys.argv[1] == "build":
     commands = [
-        'help2man --no-info --include=man-spark.txt --name="The spark application launcher" ./bin/spark --output=spark.1',
+        'help2man --no-info --include=man-sparkd.txt --name="The Sparked application launcher" ./bin/spark --output=sparkd.1',
         ]
     if os.path.exists("man-spark.txt"):
         try:

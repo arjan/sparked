@@ -23,6 +23,9 @@ class Options(usage.Options):
         self.opts = launcher.Options()
         self.opts.parseOptions(sparkedOpts)
 
+        if not appName:
+            self.opts.opt_help()
+
         self.appName = launcher.getModule(appName)
         self.module = __import__(self.appName)
 
