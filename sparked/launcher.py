@@ -4,7 +4,7 @@
 """
 The sparked application launcher.
 
-Spark applications are launched in a subprocess: so that if the
+Sparked applications are launched in a subprocess: so that if the
 application crashes, it is started again.
 """
 
@@ -23,7 +23,7 @@ class Options(usage.Options):
 
     longdesc = """The <application> argument specifies a Python module which is executed as the main sparked class. To see which options hold for an application, start:
 
-# sparked <application> --help
+# sparkd <application> --help
 """
 
     optFlags = [["debug", "d", "Debug mode"],
@@ -36,7 +36,7 @@ class Options(usage.Options):
 
 
     def getSynopsis(self):
-        return "sparked [options] <application> [app_options]"
+        return "sparkd [options] <application> [app_options]"
 
     def opt_version(self):
         print os.path.basename(sys.argv[0]), __version__
