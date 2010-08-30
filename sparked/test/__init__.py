@@ -2,5 +2,5 @@
 # See LICENSE for details.
 
 """
-Unit tests for everything spark.
+Unit tests for everything sparked.
 """

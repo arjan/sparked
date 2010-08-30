@@ -2,5 +2,5 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
 
-from spark.launcher import main
+from sparked.launcher import main
 main()

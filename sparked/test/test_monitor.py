@@ -2,18 +2,18 @@
 # See LICENSE for details.
 
 """
-Tests for spark.monitors.*
+Tests for sparked.monitors.*
 
 Maintainer: Arjan Scherpenisse
 """
 
 from twisted.trial import unittest
 
-from spark import monitors
+from sparked import monitors
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{spark.events.EventGroup}
+    Test the L{sparked.events.EventGroup}
     """
 
     def testAdd(self):

@@ -2,7 +2,7 @@
 # See LICENSE for details.
 
 """
-The spark application launcher.
+The sparked application launcher.
 
 Spark applications are launched in a subprocess: so that if the
 application crashes, it is started again.
@@ -16,14 +16,14 @@ import time
 
 from twisted.python import usage
 
-from spark import application, __version__
+from sparked import application, __version__
 
 
 class Options(usage.Options):
 
-    longdesc = """The <application> argument specifies a Python module which is executed as the main spark class. To see which options hold for an application, start:
+    longdesc = """The <application> argument specifies a Python module which is executed as the main sparked class. To see which options hold for an application, start:
 
-# spark <application> --help
+# sparked <application> --help
 """
 
     optFlags = [["debug", "d", "Debug mode"],
@@ -36,7 +36,7 @@ class Options(usage.Options):
 
 
     def getSynopsis(self):
-        return "spark [options] <application> [app_options]"
+        return "sparked [options] <application> [app_options]"
 
     def opt_version(self):
         print os.path.basename(sys.argv[0]), __version__
@@ -88,7 +88,7 @@ def launch(baseOptions, env):
     argv.append('-r')
     argv.append('gtk2')
     argv.append('-n')
-    argv.append('spark')
+    argv.append('sparked')
     argv = argv + sys.argv[1:]
 
     return subprocess.call(argv, env=env)
@@ -130,8 +130,8 @@ def main():
     try:
 
         options = Options()
-        sparkOpts, app, appOpts = splitOptions(sys.argv[1:])
-        options.parseOptions(sparkOpts)
+        sparkedOpts, app, appOpts = splitOptions(sys.argv[1:])
+        options.parseOptions(sparkedOpts)
 
         if not app:
             options.opt_help()

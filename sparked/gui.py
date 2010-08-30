@@ -10,14 +10,14 @@ import gtk
 
 from twisted.python import log
 
-from spark import events
+from sparked import events
 
 class StatusWindowClosed(events.Event):
     pass
 
 class StatusWindow (gtk.Window):
     """
-    The status window for the spark application.
+    The status window for the sparked application.
     Contains the log area
     """
 

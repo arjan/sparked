@@ -11,17 +11,17 @@ from twisted.application import service
 from twisted.python import log, usage
 from twisted.internet import reactor
 
-from spark import gui, stage, monitors, __version__
+from sparked import gui, stage, monitors, __version__
 
 
 class Application(service.MultiService):
     """
-    The spark base class.
+    The sparked base class.
 
     Spark applications inherit from this class.
 
     @ivar state: A L{StateMachine} instance which represents the main state of the Spark application.
-    @ivar baseOpts: the basic options that are given on the spark commandline; instance of L{spark.launcher.Options}.
+    @ivar baseOpts: the basic options that are given on the sparked commandline; instance of L{sparked.launcher.Options}.
     @ivar appOpts: the additional applocation commandline options; instance of your application's C{yourapplication.Options}.
     @ivar quitFlag: A L{launcher.QuitFlag} instance controlling the clean shutdown of the program. Set by L{tap.makeService}.
 
@@ -112,30 +112,30 @@ class Application(service.MultiService):
 
 class Options (usage.Options):
     """
-    Option parser for spark applications.
+    Option parser for sparked applications.
 
     Spark applications which need their own commandline arguments can
     inherit from this class: it takes care of the --version and --help
-    arguments, using the __version__ and docstring from the spark
+    arguments, using the __version__ and docstring from the sparked
     application::
 
-      # spark example --version
-      example 0.1.0 (spark 0.1)
+      # sparked example --version
+      example 0.1.0 (sparked 0.1)
 
-      # spark example --help
-      spark [spark options] example [options]
+      # sparked example --help
+      sparked [sparked options] example [options]
       Options:
          -f, --fast   Run fast
          --version
          --help       Display this help and exit.
 
-      Example runner class for spark.
+      Example runner class for sparked.
 
     """
 
     appName = None
     def getSynopsis(self):
-        return "spark [spark options] %s [options]" % self.appName
+        return "sparked [sparked options] %s [options]" % self.appName
 
     def opt_version(self):
         if self.appName:
@@ -144,7 +144,7 @@ class Options (usage.Options):
                 v = m.__version__
             else:
                 v = ""
-            print "%s %s (spark %s)" % (self.appName, v, __version__)
+            print "%s %s (sparked %s)" % (self.appName, v, __version__)
         exit(0)
 
 

@@ -1,6 +1,6 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
-# -*- test-case-name: spark.test.test_monitors -*-
+# -*- test-case-name: sparked.test.test_monitors -*-
 
 """
 Classes for monitoring the system's state.
@@ -8,8 +8,8 @@ Classes for monitoring the system's state.
 
 from twisted.application import service
 
-from spark.hardware import power, network
-from spark import events
+from sparked.hardware import power, network
+from sparked import events
 
 
 

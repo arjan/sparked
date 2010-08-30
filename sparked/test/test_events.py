@@ -2,18 +2,18 @@
 # See LICENSE for details.
 
 """
-Tests for spark.events.*
+Tests for sparked.events.*
 
 Maintainer: Arjan Scherpenisse
 """
 
 from twisted.trial import unittest
 
-from spark import events
+from sparked import events
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{spark.events.EventGroup}
+    Test the L{sparked.events.EventGroup}
     """
 
     def testGroup(self):
@@ -91,7 +91,7 @@ class TestEventGroup(unittest.TestCase):
 
 class TestEvent(unittest.TestCase):
     """
-    Test the L{spark.events.Event}
+    Test the L{sparked.events.Event}
     """
 
     def testEquality(self):

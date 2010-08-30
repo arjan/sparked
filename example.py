@@ -2,10 +2,10 @@
 # See LICENSE for details.
 
 """
-Example runner class for spark.
+Example runner class for sparked.
 """
 
-from spark import application
+from sparked import application
 
 class Options(application.Options):
    optFlags = [["fast", "f", "Run fast"]]

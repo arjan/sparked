@@ -11,7 +11,7 @@ from twisted.application import service
 from twisted.web import client
 from twisted.internet import reactor, defer
 
-from spark import events
+from sparked import events
 
 
 class NetworkConnectionEvent(events.Event):

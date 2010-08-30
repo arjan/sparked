@@ -2,7 +2,7 @@
 # See LICENSE for details.
 
 """
-Twisted Application Persistence package for the startup of the twisted spark plugin.
+Twisted Application Persistence package for the startup of the twisted sparked plugin.
 """
 
 import tempfile
@@ -14,14 +14,14 @@ from twisted.python import log
 from twisted.python.filepath import FilePath
 from twisted.python.logfile import LogFile
 
-from spark import launcher, application
+from sparked import launcher, application
 
 
 class Options(usage.Options):
     def parseOptions(self, o):
-        sparkOpts, appName, appOpts = launcher.splitOptions(o)
+        sparkedOpts, appName, appOpts = launcher.splitOptions(o)
         self.opts = launcher.Options()
-        self.opts.parseOptions(sparkOpts)
+        self.opts.parseOptions(sparkedOpts)
 
         self.appName = launcher.getModule(appName)
         self.module = __import__(self.appName)
