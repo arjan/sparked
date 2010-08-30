@@ -13,88 +13,80 @@ from sparked import events
 
 class TestEventGroup(unittest.TestCase):
     """
-    Test the L{sparked.events.EventGroup}
+    Test the L{sparked.events.EventDispatcher}
     """
 
-    def testGroup(self):
+    def testSimple(self):
+        """
+        Simple dispatching test
+        """
+        d = events.EventDispatcher()
 
-        g = events.EventGroup()
+        self.count = 0
 
-        rcv = []
+        def receive():
+            self.count += 1
+        d.addObserver("hello", receive)
 
-        def receive(e):
-            rcv.append(e)
-        g.addEventListener(receive)
-
-        g.sendEvent("hello")
-        self.assertEquals(rcv, ["hello"])
-        g.sendEvent("world")
-        self.assertEquals(rcv, ["hello", "world"])
-
-
-    def testGroupFiltering(self):
-        g = events.EventGroup()
-
-        rcv = []
-
-        def receive(e):
-            rcv.append(e)
-        g.addEventListener(receive)
-
-        class MyEvent(events.Event):
-            pass
-
-        def receive1(e):
-            rcv.append(e)
-        g.addEventListener(receive, MyEvent)
-
-        g.sendEvent("hello")
-        self.assertEquals(rcv, ["hello"])
-        g.sendEvent("world")
-        self.assertEquals(rcv, ["hello", "world"])
-
-        ev = MyEvent()
-        g.sendEvent(ev)
-        self.assertEquals(rcv, ["hello", "world", ev, ev])
- 
+        d.dispatch("hello")
+        self.assertEquals(self.count, 1)
+        d.dispatch("world")
+        self.assertEquals(self.count, 1)
+        d.dispatch("hello")
+        self.assertEquals(self.count, 2)
 
 
-    def testGroupInstance(self):
+    def testArguments(self):
+        """
+        Test that positional arguments are passed in the event handler
+        and that pre-defined positional arguments (after the priority)
+        are prepended to the event callback args.
+        """
+        d = events.EventDispatcher()
 
-        g = events.EventGroup()
+        self.args = []
 
-        class MyEvent(events.Event):
-            pass
+        def receive(*a):
+            self.args += a
+        d.addObserver("x", receive)
 
-        class Receiver:
+        d.dispatch("x")
+        self.assertEquals(self.args, [])
 
-            def __init__(self):
-                self.rcv = []
-                g.addEventListener(self.receive)
-                g.addEventListener(self.receive2, MyEvent)
+        d.dispatch("x", 3, 3)
+        self.assertEquals(self.args, [3, 3])
 
-            def receive(self, e):
-                self.rcv.append(e)
-
-            def receive2(self, e):
-                self.rcv.append(e)
-
-        r = Receiver()
-
-        g.sendEvent("hello")
-        self.assertEquals(r.rcv, ["hello"])
-
-        g.sendEvent(MyEvent())
-        self.assertEquals(r.rcv, ["hello", MyEvent(), MyEvent()])
-
+        self.args = []
+        d.addObserver("y", receive, 0, 'yo')
+        d.dispatch("y", 3)
+        self.assertEquals(self.args, ['yo', 3])
+        d.dispatch("y", 4)
+        self.assertEquals(self.args, ['yo', 3, 'yo', 4])
 
 
-class TestEvent(unittest.TestCase):
-    """
-    Test the L{sparked.events.Event}
-    """
+    def testKeywordArguments(self):
+        """
+        Test that the keyword arguments are passed through and that
+        predefined keywords arguments are overriden by the keyword
+        arguments of the event.
+        """
+        d = events.EventDispatcher()
+        self.kw = {}
+        def receive(**kw):
+            self.kw.update(kw)
 
-    def testEquality(self):
-        self.assertEquals(events.Event(foo="bar"), events.Event(foo="bar"))
-        self.assertNotEquals(events.Event(foo="bar", baz="hi"), events.Event(foo="bar"))
+        d.addObserver("x", receive)
+        d.dispatch("x")
+        self.assertEquals({}, self.kw)
 
+        d.dispatch("x", foo="bar")
+        self.assertEquals({'foo': 'bar'}, self.kw)
+
+        self.kw = {}
+        d.addObserver("y", receive, foo='bar')
+        d.dispatch("y")
+        self.assertEquals({'foo': 'bar'}, self.kw)
+
+        d.addObserver("y", receive, foo='bar')
+        d.dispatch("y", foo='baz')
+        self.assertEquals({'foo': 'baz'}, self.kw)

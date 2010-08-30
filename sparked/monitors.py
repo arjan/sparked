@@ -7,14 +7,10 @@ Classes for monitoring the system's state.
 """
 
 from twisted.application import service
+from twisted.internet import reactor
 
 from sparked.hardware import power, network
 from sparked import events
-
-
-
-class MonitorEvent(events.Event):
-    pass
 
 
 
@@ -31,8 +27,13 @@ class MonitorContainer (service.MultiService):
 
     def __init__(self):
         service.MultiService.__init__(self)
-        self.events = events.EventGroup()
+        self.events = events.EventDispatcher()
         self.monitors = []
+
+
+    def startService(self):
+        service.MultiService.startService(self)
+        reactor.callLater(0, self.update)
 
 
     def addMonitor(self, monitor):
@@ -41,14 +42,24 @@ class MonitorContainer (service.MultiService):
         """
         self.monitors.append(monitor)
         monitor.added(self)
-        self.ping()
+        self.update()
 
 
-    def ping(self):
+    def removeMonitor(self, monitor):
+        """
+        Remove a monitor from the container
+        """
+        i = self.monitors.index(monitor)
+        self.monitors[i].removed(self)
+        del self.monitors[i]
+        self.update()
+
+
+    def update(self):
         """
         Notify the container that monitor state has been changed or the monitors have been modified.
         """
-        self.events.sendEvent(MonitorEvent(container=self))
+        self.events.dispatch("updated", self)
 
 
 
@@ -68,6 +79,13 @@ class Monitor(object):
         """
         pass
 
+    def removed(self, container):
+        """
+        Called when monitor is removed from container. The container can
+        be used to hook services to.
+        """
+        pass
+
 
 
 class PowerMonitor (Monitor):
@@ -75,15 +93,19 @@ class PowerMonitor (Monitor):
 
     def added(self, container):
         self.container = container
-        svc = power.PowerService()
-        svc.setServiceParent(container)
-        power.powerEvents.addEventListener(self.powerEvent, power.PowerAvailableEvent)
+        self.svc = power.PowerService()
+        self.svc.setServiceParent(container)
+        power.powerEvents.addObserver("available", self.powerEvent)
 
 
-    def powerEvent(self, e):
-        if e.available != self.ok:
-            self.ok = e.available
-            self.container.ping()
+    def removed(self):
+        self.svc.disownServiceParent()
+
+
+    def powerEvent(self, available):
+        if available != self.ok:
+            self.ok = available
+            self.container.update()
 
 
 
@@ -92,15 +114,19 @@ class NetworkMonitor(Monitor):
 
     def added(self, container):
         self.container = container
-        svc = network.NetworkConnectionService()
-        svc.setServiceParent(container)
-        network.networkEvents.addEventListener(self.event, network.NetworkConnectionEvent)
+        self.svc = network.NetworkConnectionService()
+        self.svc.setServiceParent(container)
+        network.networkEvents.addObserver("connected", self.event)
 
 
-    def event(self, e):
-        if e.connected != self.ok:
-            self.ok = e.connected
-            self.container.ping()
+    def removed(self):
+        self.svc.disownServiceParent()
+
+
+    def event(self, connected):
+        if connected != self.ok:
+            self.ok = connected
+            self.container.update()
 
 
 
@@ -109,14 +135,18 @@ class NetworkWebMonitor(Monitor):
 
     def added(self, container):
         self.container = container
-        svc = network.NetworkWebConnectionService()
-        svc.setServiceParent(container)
-        network.networkEvents.addEventListener(self.event, network.NetworkWebConnectionEvent)
+        self.svc = network.NetworkWebConnectionService()
+        self.svc.setServiceParent(container)
+        network.networkEvents.addObserver("web-connected", self.event)
 
 
-    def event(self, e):
-        if e.connected != self.ok:
-            self.ok = e.connected
-            self.container.ping()
+    def removed(self):
+        self.svc.disownServiceParent()
+
+
+    def event(self, connected):
+        if connected != self.ok:
+            self.ok = connected
+            self.container.update()
 
 

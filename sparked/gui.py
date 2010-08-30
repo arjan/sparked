@@ -9,11 +9,8 @@ from datetime import datetime
 import gtk
 
 from twisted.python import log
-
 from sparked import events
 
-class StatusWindowClosed(events.Event):
-    pass
 
 class StatusWindow (gtk.Window):
     """
@@ -56,7 +53,7 @@ class StatusWindow (gtk.Window):
 
     def closed(self, window):
         log.removeObserver(self.log)
-        guiEvents.sendEvent(StatusWindowClosed(window=window))
+        guiEvents.dispatch("statuswindow-closed", window=window)
 
 
     def log(self, dict):
@@ -96,17 +93,17 @@ class MonitorWidget(gtk.VBox):
     def __init__(self, container):
         gtk.VBox.__init__(self)
         self.set_property("width_request", 240)
-        container.events.addEventListener(self.refresh)
+        container.events.addObserver("updated", self.refresh)
 
 
-    def refresh(self, e):
+    def refresh(self, container):
         """
         Refresh the state when a L{monitors.MonitorEvent} comes in.
         """
         for c in self.get_children():
             self.remove(c)
 
-        for c in e.container.monitors:
+        for c in container.monitors:
             v = gtk.HBox()
             l = gtk.Label(c.title)
             l.set_property("xalign", 0)
@@ -122,4 +119,5 @@ class MonitorWidget(gtk.VBox):
         self.show_all()
 
 
-guiEvents = events.EventGroup()
+guiEvents = events.EventDispatcher()
+

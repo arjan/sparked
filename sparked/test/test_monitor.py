@@ -16,7 +16,7 @@ class TestEventGroup(unittest.TestCase):
     Test the L{sparked.events.EventGroup}
     """
 
-    def testAdd(self):
+    def testAddRemove(self):
         self.pinged = 0
         
         class FooMonitor(monitors.Monitor):
@@ -24,12 +24,24 @@ class TestEventGroup(unittest.TestCase):
 
         container = monitors.MonitorContainer()
 
-        def ping(e):
+        def ping(c):
             self.pinged += 1
-        container.events.addEventListener(ping)
+            self.assertEquals(c, container)
 
-        container.addMonitor(FooMonitor())
+        container.events.addObserver("updated", ping)
+
+        a = FooMonitor()
+        container.addMonitor(a)
         self.assertEquals(self.pinged, 1)
-
-        container.addMonitor(FooMonitor())
+        self.assertEquals(container.monitors, [a])
+        
+        b = FooMonitor()
+        container.addMonitor(b)
         self.assertEquals(self.pinged, 2)
+        self.assertEquals(container.monitors, [a, b])
+
+        container.removeMonitor(a)
+        self.assertEquals(self.pinged, 3)
+        self.assertEquals(container.monitors, [b])
+
+

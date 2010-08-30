@@ -6,56 +6,57 @@
 Classes which define a generic event system.
 """
 
+from twisted.words.xish import utility
 
-class Event(object):
+class EventDispatcher(utility.EventDispatcher):
     """
-    A generic event class.
+    The sparked event dispatcher is simpler than the twisted version:
+    it does not use XPath arguments and its event prefix is always
+    empty.
+
+    This class exists to simplify the implementation of event
+    dispatchers in sparked without the syntactic sugar of xish'
+    EventDispatcher class.
     """
-    def __init__(self, **kw):
-        self.__dict__.update(kw)
+    def __init__(self, eventprefix=""):
+        utility.EventDispatcher.__init__(self, eventprefix)
 
 
-    def __eq__(self, e):
-        return self.__dict__ == e.__dict__
-
-
-    def __repr__(self):
-        return u"[Event: %s]" % str(self.__dict__)
-
-
-
-class EventGroup(object):
-    """
-    An event group defines a confined scope of event listeners.
-    """
-
-    def __init__(self):
-        self.listeners = []
-
-
-    def addEventListener(self, f, *a):
+    def dispatch(self, event, *arg, **kwarg):
         """
-        Add an even listener function
-        @param f: the function
-        @param a: Optional list of L{Event} classes to filter events on
+        Dispatch the named event to all the callbacks.
         """
-        if len(a):
-            self.listeners.append( (f, a) )
-        else:
-            self.listeners.append( (f, True) )
+        foundTarget = False
 
+        self._dispatchDepth += 1
 
-    def sendEvent(self, e):
-        """
-        Send event to my listeners.
-        """
-        [f(e) for f, match in self.listeners if self.eventMatches(e, match)]
+        observers = self._eventObservers
 
+        priorities = observers.keys()
+        priorities.sort()
+        priorities.reverse()
 
-    def eventMatches(self, event, match):
-        if match == True:
-            return True
-        for cls in match:
-            if isinstance(event, cls):
-                return True
-        return False
+        emptyLists = []
+        for priority in priorities:
+            for query, callbacklist in observers[priority].iteritems():
+                if query == event:
+                    callbacklist.callback(*arg, **kwarg)
+                    foundTarget = True
+                    if callbacklist.isEmpty():
+                        emptyLists.append((priority, query))
+
+        for priority, query in emptyLists:
+            del observers[priority][query]
+
+        self._dispatchDepth -= 1
+
+        # If this is a dispatch within a dispatch, don't
+        # do anything with the updateQueue -- it needs to
+        # wait until we've back all the way out of the stack
+        if self._dispatchDepth == 0:
+            # Deal with pending update operations
+            for f in self._updateQueue:
+                f()
+            self._updateQueue = []
+
+        return foundTarget

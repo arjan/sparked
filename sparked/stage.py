@@ -14,12 +14,6 @@ import clutter
 
 from sparked import events
 
-class StageClosed(events.Event):
-    pass
-
-class StageFullscreenToggled(events.Event):
-    pass
-
 
 class Stage (clutter.Stage):
 
@@ -30,7 +24,7 @@ class Stage (clutter.Stage):
         self.show()
         self.set_title(app.title + " - Graphics")
 
-        self.connect("destroy", lambda _: stageEvents.sendEvent(StageClosed(stage=self)))
+        self.connect("destroy", lambda _: stageEvents.dispatch("stage-closed", stage=self))
         self.connect("key-press-event", self.keyPress)
 
         #print self.x11_get_window()
@@ -46,7 +40,7 @@ class Stage (clutter.Stage):
         Toggle this stage fullscreen or not.
         """
         self.set_fullscreen(not self.get_fullscreen())
-        stageEvents.sendEvent(StageFullscreenToggled(stage=self))
+        stageEvents.dispatch("stage-fullscreentoggled", stage=self)
 
 
-stageEvents = events.EventGroup()
+stageEvents = events.EventDispatcher()

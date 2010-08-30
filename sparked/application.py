@@ -76,7 +76,7 @@ class Application(service.MultiService):
         this method in your application's subclass and return
         C{False}. This removes the dependency on the C{gtk} library.
         """
-        gui.guiEvents.addEventListener(lambda _: reactor.stop(), gui.StatusWindowClosed)
+        gui.guiEvents.addObserver("statuswindow-closed", reactor.stop)
         return gui.StatusWindow(self)
 
 
@@ -91,7 +91,7 @@ class Application(service.MultiService):
         s = stage.Stage(self)
         if not self.baseOpts['debug']:
             s.toggleFullscreen()
-        stage.stageEvents.addEventListener(lambda _: reactor.stop(), stage.StageClosed)
+        stage.stageEvents.addObserver("stage-closed", reactor.stop)
         return s
 
 

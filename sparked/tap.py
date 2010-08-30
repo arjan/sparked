@@ -19,15 +19,14 @@ from sparked import launcher, application
 
 class Options(usage.Options):
     def parseOptions(self, o):
-        sparkedOpts, appName, appOpts = launcher.splitOptions(o)
+        sparkedOpts, self.appName, appOpts = launcher.splitOptions(o)
         self.opts = launcher.Options()
         self.opts.parseOptions(sparkedOpts)
 
-        if not appName:
+        if not self.appName:
             self.opts.opt_help()
 
-        self.appName = launcher.getModule(appName)
-        self.module = __import__(self.appName)
+        self.module = launcher.loadModule(self.appName)
 
         if hasattr(self.module, 'Options'):
             self.appOpts = self.module.Options()

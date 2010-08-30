@@ -14,19 +14,6 @@ from twisted.internet import reactor, defer
 from sparked import events
 
 
-class NetworkConnectionEvent(events.Event):
-    """
-    Sent when NetworkManager connection changes.
-    """
-
-
-class NetworkWebConnectionEvent(events.Event):
-    """
-    Sent on every 'ping' of the web page request. 'connected' argument
-    is True if it succeeded, or False if not.
-    """
-
-
 class NetworkConnectionService(service.Service):
     """
     Check on network connection existence through NetworkManager.
@@ -49,7 +36,7 @@ class NetworkConnectionService(service.Service):
         interface = 'org.freedesktop.NetworkManager'
         state = self.properties.Get(interface, "ActiveConnections")
         self.connected = len(state) > 0
-        networkEvents.sendEvent(NetworkConnectionEvent(connected=self.connected))
+        networkEvents.dispatch("connected", self.connected)
 
 
 
@@ -65,21 +52,21 @@ class NetworkWebConnectionService(service.Service):
         self.connected = False
         self.loop()
         # Listen to events from NetworkManager
-        networkEvents.addEventListener(self.event, NetworkConnectionEvent)
+        networkEvents.addObserver("connected", self.event)
 
 
     def loop(self):
         d = client.getPage(self.url)
         def ok(_):
             if not self.connected:
-                networkEvents.sendEvent(NetworkWebConnectionEvent(connected=True))
+                networkEvents.dispatch("web-connected", True)
             self.connected = True
         d.addCallback(ok)
 
         def error(f):
             print f
             if self.connected:
-                networkEvents.sendEvent(NetworkWebConnectionEvent(connected=False))
+                networkEvents.dispatch("web-connected", False)
             self.connected = False
         d.addErrback(error)
 
@@ -89,7 +76,7 @@ class NetworkWebConnectionService(service.Service):
         return d
 
 
-    def event(self, e):
+    def event(self, connected=False):
         """
         Event from networkmanager came in. If network connection is
         down, do not try to fetch webpages.
@@ -98,10 +85,10 @@ class NetworkWebConnectionService(service.Service):
             self._dc.cancel()
 
         self.connected = False
-        if e.connected:
+        if connected:
             self.loop()
         else:
-            networkEvents.sendEvent(NetworkWebConnectionEvent(connected=False))
+            networkEvents.dispatch("web-connected", False)
 
 
-networkEvents = events.EventGroup()
+networkEvents = events.EventDispatcher()

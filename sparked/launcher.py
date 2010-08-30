@@ -131,13 +131,18 @@ def launchLoop(app, options, env):
 
 
 
-def getModule(app):
+def loadModule(app):
     if app[-3:] == ".py" and os.path.exists(app):
         path = os.path.dirname(app)
         if not path: path = "."
         sys.path.insert(0, path)
         app = os.path.basename(app)[:-3]
-    return app
+
+    try:
+        mod = __import__(app)
+    except ImportError:
+        raise usage.UsageError("Application not found: " + app)
+    return mod
 
 
 
@@ -146,7 +151,6 @@ def main():
     env = os.environ
 
     try:
-
         options = Options()
         sparkedOpts, appName, appOpts = splitOptions(sys.argv[1:])
         options.parseOptions(sparkedOpts)
@@ -154,12 +158,7 @@ def main():
         if not appName:
             options.opt_help()
 
-        appName = getModule(appName)
-
-        try:
-            appModule = __import__(appName)
-        except ImportError:
-            raise usage.UsageError("Application not found: " + appName)
+        appModule = loadModule(appName)
 
         if hasattr(appModule, 'Options'):
             opts = appModule.Options()
