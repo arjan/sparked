@@ -27,11 +27,12 @@ class Options(usage.Options):
 """
 
     optFlags = [["debug", "d", "Debug mode"],
-                ["no-respawn", "N", "Do not respawn on crash"],
+                ["no-subprocess", "N", "Do not start a subprocess for crash prevention"],
                 ]
 
     optParameters = [
-            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<application>.pid')
+            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<application>.pid'),
+            ('logfile', None, None, 'Pidfile location (defaults to /tmp/log/<application>.log')
             ]
 
 
@@ -156,8 +157,9 @@ def main():
             options['pidfile'] = os.path.join(tempfile.gettempdir(), app + ".pid")
 
 
-        if options['no-respawn']:
-            launch(options, env)
+        if options['no-subprocess']:
+            #launch(options, env)
+            print "FIXME"
         else:
             launchLoop(app, options, env)
 

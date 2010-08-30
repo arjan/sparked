@@ -10,7 +10,7 @@ from setuptools import setup
 import os
 import sys
 import subprocess
-import spark
+import sparked
 from twisted.python import procutils
 
 
@@ -21,8 +21,8 @@ def refresh_plugin_cache():
 
 
 setup(
-    name = "SparkFramework",
-    version = spark.__version__,
+    name = "Sparked",
+    version = sparked.__version__,
     author = "Arjan Scherpenisse",
     author_email = "arjan@scherpenisse.net",
     url = "http://scherpenisse.net/spark",

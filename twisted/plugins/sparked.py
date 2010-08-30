@@ -4,7 +4,7 @@
 from twisted.application.service import ServiceMaker
 
 Spark = ServiceMaker(
-        "Spark",
-        "spark.tap",
-        "Spark application launcher",
-        "spark")
+        "Sparked",
+        "sparked.tap",
+        "Sparked application launcher",
+        "sparked")
