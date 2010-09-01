@@ -3,7 +3,7 @@
 # See LICENSE for details.
 
 """
-spark installation script
+Sparked installation script
 """
 
 from setuptools import setup
@@ -19,6 +19,21 @@ def refresh_plugin_cache():
     list(getPlugins(IPlugin))
 
 
+if sys.argv[1] == "build":
+    commands = [
+        'PYTHONPATH=. help2man --no-info --include=man-sparkd.txt --name="The Sparked application launcher" ./bin/sparkd --output=sparkd.1',
+        ]
+    if os.path.exists("man-sparkd.txt"):
+        try:
+            help2man = procutils.which("help2man")[0]
+        except IndexError:
+            print("Cannot build the man pages. help2man was not found.")
+        else:
+            for c in commands:
+                print("$ %s" % (c))
+                subprocess.call(c, shell=True)
+
+
 
 setup(
     name = "Sparked",
@@ -28,14 +43,14 @@ setup(
     url = "http://scherpenisse.net/spark",
     description = "Application development framework for interactive installations",
     scripts = [
-        "bin/spark"
+        "bin/sparkd"
         ],
     license="MIT/X",
-    packages = ['spark',
-                'spark.hardware',
-                'spark.test',
+    packages = ['sparked',
+                'sparked.hardware',
+                'sparked.test',
                 'twisted.plugins'],
-    package_data={'twisted.plugins': ['twisted/plugins/spark.py']},
+    package_data={'twisted.plugins': ['twisted/plugins/sparked.py']},
 
     long_description = """
 Like Twisted, Sparked is a python library and an application runner in once. Some of its features follow here:
@@ -64,18 +79,3 @@ Like Twisted, Sparked is a python library and an application runner in once. Som
     )
 
 refresh_plugin_cache()
-
-if sys.argv[1] == "build":
-    commands = [
-        'help2man --no-info --include=man-sparkd.txt --name="The Sparked application launcher" ./bin/spark --output=sparkd.1',
-        ]
-    if os.path.exists("man-spark.txt"):
-        try:
-            help2man = procutils.which("help2man")[0]
-        except IndexError:
-            print("Cannot build the man pages. help2man was not found.")
-        else:
-            for c in commands:
-                print("$ %s" % (c))
-                subprocess.call(c, shell=True)
-

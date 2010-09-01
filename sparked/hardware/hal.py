@@ -6,8 +6,6 @@ Hardware monitoring classes based on linux' HAL system.
 """
 
 import dbus
-import glob
-import os
 
 from twisted.application import service
 from twisted.internet import reactor
@@ -77,41 +75,3 @@ class HardwareMonitor (service.Service):
     def deviceRemoved(self, udi):
         if udi in self.deviceInfo:
             del self.deviceInfo[udi]
-
-
-
-class SerialPortMonitor (HardwareMonitor):
-    """
-    Serial port device monitor.
-    """
-    subsystem = "serial"
-
-    def deviceAdded(self, udi):
-        device = HardwareMonitor.deviceAdded(self, udi)
-        if not device:
-            return
-
-        port = str(device.GetProperty('serial.device'))
-
-        self.deviceInfo[udi]["path"] = port
-        self.deviceInfo[udi]["hal_device"] = device
-
-        # find the by-id path
-        by_id = [p for p in glob.glob("/dev/serial/by-id/*") if os.path.realpath(p) == port]
-        if by_id:
-            self.deviceInfo[udi]["unique_path"] = by_id[0]
-        self.serialPortAdded(udi, self.deviceInfo[udi])
-
-
-    def deviceRemoved(self, udi):
-        if udi in self.deviceInfo:
-            self.serialPortRemoved(udi, self.deviceInfo[udi])
-        HardwareMonitor.deviceRemoved(self, udi)
-
-
-    def serialPortAdded(self, udi, info):
-        pass
-
-
-    def serialPortRemoved(self, udi, info):
-        pass

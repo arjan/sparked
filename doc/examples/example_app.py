@@ -5,6 +5,7 @@
 Example runner class for sparked.
 """
 
+from twisted.internet import reactor
 from sparked import application
 
 class Options(application.Options):
@@ -25,6 +26,8 @@ class Application(application.Application):
         else:
             self.delay = 10
 
+        from sparked.hardware.hal import SerialPortMonitor
+        reactor.callLater(0, SerialPortMonitor().setServiceParent, self)
 
     def enter_start(self):
         self.state.setAfter("ping", self.delay)
