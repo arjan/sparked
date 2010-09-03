@@ -5,12 +5,11 @@
 Example runner class for sparked.
 """
 
-from twisted.internet import reactor
-from sparked import application
+from sparked import application, monitors
 from sparked.internet.zeroconf import zeroconfService
 
 class Options(application.Options):
-   optFlags = [["fast", "f", "Run fast"]]
+    optFlags = [["fast", "f", "Run fast"]]
 
 __version__ = "0.1.0"
 
@@ -18,19 +17,17 @@ __version__ = "0.1.0"
 class Application(application.Application):
 
     title = "Spark example"
-
+    
     def startService(self):
         application.Application.startService(self)
-
+        
         zeroconfService.subscribeTo("_daap._tcp")
-
+        
         if self.appOpts['fast']:
             self.delay = 1
         else:
             self.delay = 10
-
-        #zeroconfService.publishService("Test muziek", "_daap._tcp", 3333)
-        #zeroconfService.unpublishService("Test muziek")
+        zeroconfService.publishService("Test muziek2", "_daap._tcp", 3333)
 
 
     def enter_start(self):
@@ -43,3 +40,11 @@ class Application(application.Application):
 
     def createStage(self):
         return False
+
+
+    def createMonitors(self):
+        m = application.Application.createMonitors(self)
+
+        m.addMonitor(monitors.NamedZeroconfMonitor("_daap._tcp", "Test muziek"))
+
+        return m

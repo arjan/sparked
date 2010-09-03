@@ -10,6 +10,7 @@ from twisted.application import service
 from twisted.internet import reactor
 
 from sparked.hardware import power, network
+from sparked.internet import zeroconf
 from sparked import events
 
 
@@ -149,4 +150,34 @@ class NetworkWebMonitor(Monitor):
             self.ok = connected
             self.container.update()
 
+
+
+class NamedZeroconfMonitor(Monitor):
+    """
+    Monitor which is 'ok' when it has detected a service with given
+    type and name.
+    """
+
+    def __init__(self, type, name):
+        self.type = type
+        self.name = name
+        self.title = name
+
+
+    def added(self, container):
+        self.container = container
+        zeroconf.zeroconfService.subscribeTo(self.type)
+        zeroconf.zeroconfEvents.addObserver("service-found", self._found)
+        zeroconf.zeroconfEvents.addObserver("service-lost", self._lost)
+
+
+    def _found(self, name, **kw):
+        if kw['type'] == self.type and name == self.name:
+            self.ok = True
+            self.container.update()
+
+    def _lost(self, name, **kw):
+        if kw['type'] == self.type and name == self.name:
+            self.ok = False
+            self.container.update()
 

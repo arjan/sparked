@@ -21,6 +21,7 @@ class _ZeroconfService (object):
         self.published = {}
         self.server = None
         self.bus = None
+        self.subscribed = []
 
 
     def publishService(self, name, stype, port, domain="", host=""):
@@ -69,10 +70,13 @@ class _ZeroconfService (object):
 
 
 
-    def subscribeTo(self, serviceName):
+    def subscribeTo(self, serviceType):
         """
         Subscribe to a specific service.
         """
+        if serviceType in self.subscribed:
+            return
+
         if not self.bus:
             self.bus = dbus.SystemBus()
         if not self.server:
@@ -80,10 +84,11 @@ class _ZeroconfService (object):
 
         sbrowser = dbus.Interface(self.bus.get_object(avahi.DBUS_NAME,
                                                       self.server.ServiceBrowserNew(avahi.IF_UNSPEC,
-                                                                                    avahi.PROTO_UNSPEC, serviceName, 'local', dbus.UInt32(0))),
+                                                                                    avahi.PROTO_UNSPEC, serviceType, 'local', dbus.UInt32(0))),
                                                                     avahi.DBUS_INTERFACE_SERVICE_BROWSER)
         sbrowser.connect_to_signal("ItemNew", self._itemNew)
         sbrowser.connect_to_signal("ItemRemove", self._itemRemove)
+        self.subscribed.append(serviceType)
 
 
     # Avahi handler functions
@@ -99,7 +104,7 @@ class _ZeroconfService (object):
             address = args[7]
             port = args[8]
             log.msg("** New service: %s (%s@%s)" % (name, address, port))
-            zeroconfEvents.dispatch("service-found", name, address=address, port=port)
+            zeroconfEvents.dispatch("service-found", name, address=address, port=port, type=stype)
 
         self.server.ResolveService(iface, protocol, name, stype, 
                                    domain, avahi.PROTO_UNSPEC, dbus.UInt32(0), 
@@ -109,7 +114,7 @@ class _ZeroconfService (object):
 
     def _itemRemove(self, iface, protocol, name, stype, domain, flags):
         log.msg("** Service lost: %s" % name)
-        zeroconfEvents.dispatch("service-lost", name)
+        zeroconfEvents.dispatch("service-lost", name, type=stype)
 
 
 try:
