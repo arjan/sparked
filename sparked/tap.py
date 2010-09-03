@@ -26,7 +26,7 @@ class Options(usage.Options):
         if not self.appName:
             self.opts.opt_help()
 
-        self.module = launcher.loadModule(self.appName)
+        self.module, self.appName = launcher.loadModule(self.appName)
 
         if hasattr(self.module, 'Options'):
             self.appOpts = self.module.Options()

@@ -140,9 +140,10 @@ def loadModule(app):
 
     try:
         mod = __import__(app)
-    except ImportError:
+    except ImportError, e:
+        log.err(e)
         raise usage.UsageError("Application not found: " + app)
-    return mod
+    return mod, app
 
 
 
@@ -158,7 +159,7 @@ def main():
         if not appName:
             options.opt_help()
 
-        appModule = loadModule(appName)
+        appModule, appName = loadModule(appName)
 
         if hasattr(appModule, 'Options'):
             opts = appModule.Options()
