@@ -7,6 +7,7 @@ Example runner class for sparked.
 
 from twisted.internet import reactor
 from sparked import application
+from sparked.internet.zeroconf import zeroconfService
 
 class Options(application.Options):
    optFlags = [["fast", "f", "Run fast"]]
@@ -21,13 +22,16 @@ class Application(application.Application):
     def startService(self):
         application.Application.startService(self)
 
+        zeroconfService.subscribeTo("_daap._tcp")
+
         if self.appOpts['fast']:
             self.delay = 1
         else:
             self.delay = 10
 
-        from sparked.hardware.hal import SerialPortMonitor
-        reactor.callLater(0, SerialPortMonitor().setServiceParent, self)
+        #zeroconfService.publishService("Test muziek", "_daap._tcp", 3333)
+        #zeroconfService.unpublishService("Test muziek")
+
 
     def enter_start(self):
         self.state.setAfter("ping", self.delay)
