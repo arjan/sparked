@@ -11,7 +11,6 @@ application crashes, it is started again.
 import os
 import subprocess
 import sys
-import tempfile
 import time
 
 from twisted.internet import reactor
@@ -34,8 +33,8 @@ class Options(usage.Options):
 
     optParameters = [
             ('id', None, None, 'Application id (defaults to the sparked module name)'),
-            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<app-id>/sparkd.pid)'),
-            ('logfile', None, None, 'Pidfile location (defaults to /tmp/<app-id>/sparkd.log)')
+            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<id>/sparkd.pid)'),
+            ('logfile', None, None, 'Pidfile location (defaults to /tmp/<id>/sparkd.log)')
             ]
 
 
