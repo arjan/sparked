@@ -6,9 +6,10 @@ The base application class.
 """
 
 import time
+import tempfile
 
 from twisted.application import service
-from twisted.python import log, usage
+from twisted.python import log, usage, filepath
 from twisted.internet import reactor
 
 from sparked import gui, stage, monitors, __version__
@@ -147,6 +148,17 @@ class Options (usage.Options):
             print "%s %s (sparked %s)" % (self.appName, v, __version__)
         exit(0)
 
+
+
+def getTempPath(modulename, id=None):
+    if id:
+        path = id
+    else:
+        path = modulename
+    p = filepath.FilePath(tempfile.gettempdir()).child(path)
+    if not p.exists():
+        p.createDirectory()
+    return p
 
 
 class StateMachine (object):

@@ -5,8 +5,7 @@ _trial_temp
 dropin.cache
 build
 dist
-*.1
 html
 *.swp
 Sparked.egg-info
-
+doc/api/

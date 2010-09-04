@@ -45,27 +45,34 @@ def makeService(config):
     if not hasattr(config.module, 'Application'):
         raise usage.UsageError("Invalid application module: " + config.appName)
 
-
     # Instantiate the main application
     s = config.module.Application(config.opts, config.appOpts)
 
+    # Assign the 'application id'
+    if config.opts['id']:
+        s.id = config.opts['id']
+    else:
+        s.id = config.appName
+
+    # assign temppath
+    s.tempPath = application.getTempPath(config.appName, s.id)
+
     # Set quitflag 
-    s.quitFlag = launcher.QuitFlag(config.appName)
+    s.quitFlag = launcher.QuitFlag(s.tempPath.child("quitflag"))
 
     # Set the name
     s.setName(config.appName)
 
     # Set up logging in /tmp/log, maximum 9 rotated log files.
-    if not config.opts['debug']:
-        if config.opts['logfile']:
-            logfile = config.opts['logfile']
-            logDir = FilePath(logfile).parent()
-        else:
-            logfile = config.appName + '.log'
-            logDir = FilePath(tempfile.gettempdir()).child('log')
+    if config.opts['logfile']:
+        logfile = config.opts['logfile']
+        logDir = FilePath(logfile).parent()
         if not logDir.exists():
             logDir.createDirectory()
-        logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
-        log.addObserver(log.FileLogObserver(logFile).emit)
+    else:
+        logfile = 'sparkd.log'
+        logDir = s.tempPath
+    logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
+    log.addObserver(log.FileLogObserver(logFile).emit)
 
     return s

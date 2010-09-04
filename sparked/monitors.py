@@ -8,6 +8,7 @@ Classes for monitoring the system's state.
 
 from twisted.application import service
 from twisted.internet import reactor
+from twisted.python import log
 
 from sparked.hardware import power, network
 from sparked.internet import zeroconf
@@ -25,6 +26,7 @@ class MonitorContainer (service.MultiService):
 
     monitors = None
     events = None
+    verbose = False
 
     def __init__(self):
         service.MultiService.__init__(self)
@@ -61,7 +63,15 @@ class MonitorContainer (service.MultiService):
         Notify the container that monitor state has been changed or the monitors have been modified.
         """
         self.events.dispatch("updated", self)
-
+        if self.verbose:
+            log.msg("= STATUS =====================")
+            for m in self.monitors:
+                if m.ok:
+                    stat = "ok"
+                else:
+                    stat = "FAIL"
+                log.msg("%-26s%4s" % (m.title, stat))
+            log.msg("==============================")
 
 
 class Monitor(object):
@@ -156,12 +166,15 @@ class NamedZeroconfMonitor(Monitor):
     """
     Monitor which is 'ok' when it has detected a service with given
     type and name.
+
+    @ivar type: The service type that needs to be matched. E.g. C{_daap._tcp}.
+    @ivar name: The service name that needs to be matched. E.g. C{Arjan's Music}.
     """
 
-    def __init__(self, type, name):
-        self.type = type
+    def __init__(self, name, type):
         self.name = name
         self.title = name
+        self.type = type
 
 
     def added(self, container):
@@ -175,6 +188,7 @@ class NamedZeroconfMonitor(Monitor):
         if kw['type'] == self.type and name == self.name:
             self.ok = True
             self.container.update()
+
 
     def _lost(self, name, **kw):
         if kw['type'] == self.type and name == self.name:
