@@ -48,4 +48,27 @@ class Stage (clutter.Stage):
             self.hide_cursor()
 
 
+def positionInBox(actor, box):
+    """
+    Given an actor and a box (also an actor), position the actor
+    inside the box, adjusting its position and size, while preserving
+    the aspect ratio of the actor.
+    """
+    aw, ah = actor.get_width(), actor.get_height()
+    bw, bh = box.get_width(), box.get_height()
+
+    aspect = ah/float(aw)
+
+    if bw*aspect <= bh:
+        actor.set_width(bw)
+        actor.set_height(bw*aspect)
+        actor.set_x(box.get_x())
+        actor.set_y(box.get_y()+(bh-bw*aspect)*0.5)
+    else:
+        actor.set_height(bh)
+        actor.set_width(bh/aspect)
+        actor.set_y(box.get_y())
+        actor.set_x(box.get_x()+(bw-bh/aspect)*0.5)
+
+
 stageEvents = events.EventDispatcher()
