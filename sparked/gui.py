@@ -53,7 +53,7 @@ class StatusWindow (gtk.Window):
 
     def closed(self, window):
         log.removeObserver(self.log)
-        guiEvents.dispatch("statuswindow-closed", window=window)
+        guiEvents.dispatch("statuswindow-closed", window)
 
 
     def log(self, dict):

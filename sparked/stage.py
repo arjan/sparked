@@ -17,6 +17,8 @@ from sparked import events
 
 class Stage (clutter.Stage):
 
+    keys = {'fullscreen': gtk.keysyms.F11}
+
     def __init__(self, app):
         clutter.Stage.__init__(self)
         self.app = app
@@ -24,14 +26,14 @@ class Stage (clutter.Stage):
         self.show()
         self.set_title(app.title + " - Graphics")
 
-        self.connect("destroy", lambda _: stageEvents.dispatch("stage-closed", stage=self))
+        self.connect("destroy", lambda _: stageEvents.dispatch("stage-closed", self))
         self.connect("key-press-event", self.keyPress)
 
-        #print self.x11_get_window()
+        self.debug = self.app.baseOpts['debug']
 
 
     def keyPress(self, actor, event):
-        if event.keyval == gtk.keysyms.F11:
+        if event.keyval == self.keys['fullscreen']:
             self.toggleFullscreen()
 
 
@@ -41,6 +43,9 @@ class Stage (clutter.Stage):
         """
         self.set_fullscreen(not self.get_fullscreen())
         stageEvents.dispatch("stage-fullscreentoggled", stage=self)
+        self.show_cursor()
+        if not self.debug and not self.get_fullscreen():
+            self.hide_cursor()
 
 
 stageEvents = events.EventDispatcher()

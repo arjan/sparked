@@ -67,6 +67,10 @@ class Application(service.MultiService):
         self.statusWindow = self.createStatusWindow()
 
         self.stage = self.createStage()
+        if self.stage:
+            if not self.baseOpts['debug']:
+                self.stage.toggleFullscreen()
+            stage.stageEvents.addObserver("stage-closed", lambda _: reactor.stop)
 
 
     def createStatusWindow(self):
@@ -77,7 +81,7 @@ class Application(service.MultiService):
         this method in your application's subclass and return
         C{False}. This removes the dependency on the C{gtk} library.
         """
-        gui.guiEvents.addObserver("statuswindow-closed", reactor.stop)
+        gui.guiEvents.addObserver("statuswindow-closed", lambda _: reactor.stop)
         return gui.StatusWindow(self)
 
 
@@ -89,11 +93,7 @@ class Application(service.MultiService):
         this method in your application's subclass and return
         C{False}. This removes the dependency on the C{clutter} library.
         """
-        s = stage.Stage(self)
-        if not self.baseOpts['debug']:
-            s.toggleFullscreen()
-        stage.stageEvents.addObserver("stage-closed", reactor.stop)
-        return s
+        return stage.Stage(self)
 
 
     def createMonitors(self):
