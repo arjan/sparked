@@ -67,11 +67,20 @@ class Application(service.MultiService):
 
         self.statusWindow = self.createStatusWindow()
 
+        if not self.statusWindow:
+            # If there is no status window, make sure the monitors talk to us in the log.
+            self.monitors.verbose = True
+        else:
+            # Shutdown when status window is closed
+            gui.guiEvents.addObserver("statuswindow-closed", lambda _: reactor.stop())
+
         self.stage = self.createStage()
         if self.stage:
+            # shutdown when stage is closed
+            stage.stageEvents.addObserver("stage-closed", lambda _: reactor.stop())
+            # go fullscreen if not --debug
             if not self.baseOpts['debug']:
                 self.stage.toggleFullscreen()
-            stage.stageEvents.addObserver("stage-closed", lambda _: reactor.stop)
 
 
     def createStatusWindow(self):
@@ -82,7 +91,6 @@ class Application(service.MultiService):
         this method in your application's subclass and return
         C{False}. This removes the dependency on the C{gtk} library.
         """
-        gui.guiEvents.addObserver("statuswindow-closed", lambda _: reactor.stop)
         return gui.StatusWindow(self)
 
 
