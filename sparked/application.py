@@ -5,6 +5,7 @@
 The base application class.
 """
 
+import dbus
 import time
 import tempfile
 
@@ -108,6 +109,33 @@ class Application(service.MultiService):
 
     def stopService(self):
         self.quitFlag.set()
+
+
+
+    screensaverInhibited = None
+    """ Flag which is non-zero when the screensaver has been inhibited. """
+
+
+    def screensaverInhibit(self, reason):
+        """
+        Prevent the screen saver from starting.
+        """
+        bus = dbus.SessionBus()
+        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
+        self.screensaverInhibited = iface.Inhibit(self.name, reason)
+
+
+    def screensaverUnInhibit(self):
+        """
+        Resume the screen saver.
+        """
+        if not self.screensaverInhibited:
+            return
+        bus = dbus.SessionBus()
+        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
+        iface.UnInhibit(self.screensaverInhibited)
+        self.screensaverInhibited = None
+
 
 
 

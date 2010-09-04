@@ -44,8 +44,15 @@ class Stage (clutter.Stage):
         self.set_fullscreen(not self.get_fullscreen())
         stageEvents.dispatch("stage-fullscreentoggled", stage=self)
         self.show_cursor()
-        if not self.debug and not self.get_fullscreen():
-            self.hide_cursor()
+
+        if not self.get_fullscreen():
+            # we're fullscreen here
+            if not self.debug:
+                self.hide_cursor()
+
+            self.app.screensaverInhibit("Fullscreen presentation")
+        else:
+            self.app.screensaverUnInhibit()
 
 
 def positionInBox(actor, box):

@@ -119,5 +119,6 @@ class MonitorWidget(gtk.VBox):
         self.show_all()
 
 
+
 guiEvents = events.EventDispatcher()
 
