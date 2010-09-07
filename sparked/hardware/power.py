@@ -15,9 +15,9 @@ from sparked import events
 class PowerService(service.Service):
     """
     A service which monitors the power state of the computer. It fires
-    L{PowerAvailableEvent}s and L{LowPowerEvent}s. On the startup of
-    the service, these signals get fired once to ensure a valid system
-    state.
+    "available" and "low" events when the power state changes. On the
+    startup of the service, these signals get fired once to ensure a
+    valid system state.
     """
 
     def __init__(self):

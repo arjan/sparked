@@ -98,7 +98,7 @@ class MonitorWidget(gtk.VBox):
 
     def refresh(self, container):
         """
-        Refresh the state when a L{monitors.MonitorEvent} comes in.
+        Refresh the state when an "updated" event from the linked monitor container comes in.
         """
         for c in self.get_children():
             self.remove(c)

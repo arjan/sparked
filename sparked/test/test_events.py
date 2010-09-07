@@ -11,7 +11,7 @@ from twisted.trial import unittest
 
 from sparked import events
 
-class TestEventGroup(unittest.TestCase):
+class TestEventDispatcher(unittest.TestCase):
     """
     Test the L{sparked.events.EventDispatcher}
     """

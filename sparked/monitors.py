@@ -21,7 +21,7 @@ class MonitorContainer (service.MultiService):
     A container for monitoring services.
 
     @ivar monitors: A list of L{Monitor} objects.
-    @ivar events: An L{events.EventGroup} which triggers a L{MonitorEvent} when one of the monitors state changes.
+    @ivar events: An L{events.EventDispatcher} which triggers an "updated" event when one of the monitors state changes.
     """
 
     monitors = None

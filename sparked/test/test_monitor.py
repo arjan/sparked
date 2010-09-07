@@ -11,12 +11,15 @@ from twisted.trial import unittest
 
 from sparked import monitors
 
-class TestEventGroup(unittest.TestCase):
+class TestMonitorContainer(unittest.TestCase):
     """
-    Test the L{sparked.events.EventGroup}
+    Test the L{sparked.monitors.MonitorContainer}
     """
 
     def testAddRemove(self):
+        """
+        Whether the "updated" signal comes in when a monitor changes state.
+        """
         self.pinged = 0
         
         class FooMonitor(monitors.Monitor):
