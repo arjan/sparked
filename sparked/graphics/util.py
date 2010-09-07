@@ -7,7 +7,7 @@ Utility functions for graphics.
 
 def parseColor(x):
     """
-    Given a string in hexadecimal RGB notation, return a (r,g,b) triplet where r,g,b in 0 >= x > 256
+    Given a string in hexadecimal RGB notation, return a (r,g,b) triplet where r,g,b in 0.0 >= x > 1.0
     """
     if len(x) not in [3,4,6,7]:
         return False
@@ -18,5 +18,5 @@ def parseColor(x):
 
     col = []
     for i in range(3):
-        col.append(int(x[i*2:i*2+2], 16)/256)
+        col.append(int(x[i*2:i*2+2], 16)/256.)
     return tuple(col)
