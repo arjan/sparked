@@ -30,6 +30,14 @@ class Stage (clutter.Stage):
         self.connect("key-press-event", self.keyPress)
 
         self.debug = self.app.baseOpts['debug']
+        self.created()
+
+
+    def created(self):
+        """
+        Callback function when the construction of the stage is
+        complete and it is ready to be shown at the screen.
+        """
 
 
     def keyPress(self, actor, event):

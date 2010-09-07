@@ -13,7 +13,8 @@ from twisted.application import service
 from twisted.python import log, usage, filepath
 from twisted.internet import reactor
 
-from sparked import gui, stage, monitors, __version__
+from sparked import gui, monitors, __version__
+from sparked.graphics import stage
 
 
 class Application(service.MultiService):
@@ -204,11 +205,16 @@ class StateMachine (object):
     This machine is linked to a parent class, on which it calls
     enter_<state> and exit_<state> methods on state change. Also
     provided is a mechanism for timed state changes.
+
+    @ivar nextStateAfter: nr of seconds after which the next state
+    change is triggered. If None, the timer is not active.
     """
 
     _state = None
     _statechanger = None
     _listeners = None
+
+    nextStateAfter = None
 
 
     def __init__(self, parent):
@@ -224,6 +230,8 @@ class StateMachine (object):
 
         if self._statechanger and self._statechanger.active():
             self._statechanger.cancel()
+        self._statechanger = None
+        self.nextStateAfter = None
 
         if self._state:
             self._call("exit_%s" % self._state)
@@ -240,8 +248,20 @@ class StateMachine (object):
         """
         self._afterStart = time.time()
         self._afterStop = self._afterStart + after
-        self.next_state_after = after
+        self.nextStateAfter = after
         self._statechanger = reactor.callLater(after, self.set, newstate)
+
+
+    def bumpAfter(self, after=None):
+        """
+        Change the state-changer timer to the specified nr of
+        seconds. If none given, resets the timer to the initial delay,
+        'bumping' it.
+        """
+        if not after:
+            after = self.nextStateAfter
+        self.nextStateAfter = after
+        self._statechanger.reset(after)
 
 
     @property
