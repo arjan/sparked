@@ -18,5 +18,5 @@ def parseColor(x):
 
     col = []
     for i in range(3):
-        col.append(int(x[i*2:i*2+2], 16)/256.)
+        col.append(int(x[i*2:i*2+2], 16)/255.)
     return tuple(col)
