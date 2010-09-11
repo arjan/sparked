@@ -101,10 +101,11 @@ class _ZeroconfService (object):
 
         def resolveSuccess(*args):
             name = args[2]
+            hostname = args[5]
             address = args[7]
             port = args[8]
-            log.msg("** New service: %s (%s@%s)" % (name, address, port))
-            zeroconfEvents.dispatch("service-found", name, address=address, port=port, type=stype)
+            log.msg("** New service: %s (%s@%s)" % (name, hostname, port))
+            zeroconfEvents.dispatch("service-found", name, hostname=hostname, address=address, port=port, type=stype)
 
         self.server.ResolveService(iface, protocol, name, stype, 
                                    domain, avahi.PROTO_UNSPEC, dbus.UInt32(0), 
