@@ -74,6 +74,12 @@ class MonitorContainer (service.MultiService):
             log.msg("==============================")
 
 
+    def ok(self):
+        for m in self.monitors:
+            if not m.ok: return False
+        return True
+
+
 class Monitor(object):
     """
     A generic monitor

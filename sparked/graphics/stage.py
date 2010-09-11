@@ -33,6 +33,7 @@ class Stage (clutter.Stage):
         self.connect("key-press-event", self.keyPress)
 
         self.debug = self.app.baseOpts['debug']
+        self.addMonitors()
         self.created()
 
 
@@ -41,6 +42,33 @@ class Stage (clutter.Stage):
         Callback function when the construction of the stage is
         complete and it is ready to be shown at the screen.
         """
+
+
+    def addMonitors(self):
+        """
+        Add a widget to the stage which shows when one of the monitors
+        reports an error.
+        """
+        self.app.monitors.events.addObserver("updated", self.updateMonitors)
+        self._monitorText = clutter.Text()
+        self._monitorText.set_font_name("helvetica bold 18px")
+        self._monitorText.set_color(clutter.color_from_string("#ff0000"))
+        self._monitorText.set_x(3)
+        self.add(self._monitorText)
+
+
+    def updateMonitors(self, container):
+        if container.ok():
+            self._monitorText.hide()
+            return
+        txt = "ERROR: "
+        for m in container.monitors:
+            if not m.ok:
+                txt += m.title+", "
+        txt = txt[:-2]
+        self._monitorText.set_text(txt)
+        self._monitorText.show()
+        self._monitorText.raise_top()
 
 
     def keyPress(self, actor, event):
