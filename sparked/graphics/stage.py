@@ -12,12 +12,15 @@ F11 toggles fullscreen.
 import gtk
 import clutter
 
+from twisted.internet import reactor
+
 from sparked import events
 
 
 class Stage (clutter.Stage):
 
-    keys = {'fullscreen': gtk.keysyms.F11}
+    keys = {'fullscreen': gtk.keysyms.F11,
+            'quit': (clutter.CONTROL_MASK, gtk.keysyms.q)}
 
     def __init__(self, app):
         clutter.Stage.__init__(self)
@@ -41,8 +44,24 @@ class Stage (clutter.Stage):
 
 
     def keyPress(self, actor, event):
-        if event.keyval == self.keys['fullscreen']:
+        """
+        Handle keypresses.
+        """
+        if self.isKey(event, self.keys['fullscreen']):
             self.toggleFullscreen()
+        if self.isKey(event, self.keys['quit']):
+            reactor.stop()
+
+
+    def isKey(self, event, keydef):
+        if type(keydef) != tuple:
+            return event.keyval == keydef
+
+        for m in keydef[:-1]:
+            if not (event.modifier_state & m):
+                return False
+        return event.keyval == keydef[-1]
+
 
 
     def toggleFullscreen(self):
