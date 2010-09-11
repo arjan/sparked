@@ -5,7 +5,9 @@
 Hardware monitoring classes based on linux' HAL system.
 """
 
+import os
 import dbus
+import glob
 
 from twisted.application import service
 from twisted.internet import reactor
@@ -17,18 +19,28 @@ HAL_DEVICE_INTERFACE = 'org.freedesktop.Hal.Device'
 HAL_MANAGER_INTERFACE = 'org.freedesktop.Hal.Manager'
 HAL_MANAGER_UDI = '/org/freedesktop/Hal/Manager'
 
+# The following properties get automatically read upon device insertion.
+# See http://people.freedesktop.org/~dkukawka/hal-spec-git/hal-spec.html
+#
+HAL_SUBSYSTEM_PROPERTIES = {
+    'serial': ['originating_device', 'device', 'port', 'type'],
+    'video4linux': ['device', 'version'],
+    'input': ['device']
+    }
 
 
 class HardwareMonitor (service.Service):
     """
     A generic hardware monitor class based on HAL. Listens for device add/remove filtered on a specific subsystem.
+
+    @ivar subsystem: The HAL subsystem type to monitor. E.g. serial, video4linux, ...
+    @ivar deviceInfo: dict which will be filled with device information. Key is the HAL UDI (Unique Device Identifier).
+    @ivar uniquePath: If set, point to a directory where the symlinks to the unique devices will be made, e.g. /dev/serial/by-id/
     """
 
-    # e.g., 'serial', 'video4linux'
     subsystem = None
-
-    # dict (by UDI) which will be filled with runtime info on device.
     deviceInfo = None
+    uniquePath = None
 
 
     def startService(self):
@@ -69,6 +81,17 @@ class HardwareMonitor (service.Service):
             return
 
         self.deviceInfo[udi] = {}
+
+        if self.subsystem in HAL_SUBSYSTEM_PROPERTIES:
+            for k in HAL_SUBSYSTEM_PROPERTIES[self.subsystem]:
+                self.deviceInfo[udi][k] = str(device.GetProperty(self.subsystem+'.'+k))
+
+        if "device" in self.deviceInfo[udi] and self.uniquePath:
+            by_id = [p for p in glob.glob(os.path.join(self.uniquePath, "*"))
+                     if os.path.realpath(p) == self.deviceInfo[udi]["device"]]
+            if by_id:
+                self.deviceInfo[udi]["unique_path"] = by_id[0]
+
         return device
 
 

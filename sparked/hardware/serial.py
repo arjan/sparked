@@ -7,11 +7,8 @@ Everything serial ports.
 Autodetection of plugged in serialport devices and protocol probing.
 """
 
-import sys
-import os
-import glob
 
-from zope.interface import Interface, Attribute, implements
+from zope.interface import Interface, Attribute
 
 from twisted.python import log
 from twisted.internet import protocol, defer, reactor
@@ -31,16 +28,7 @@ class SerialPortMonitor (hal.HardwareMonitor):
         device = hal.HardwareMonitor.deviceAdded(self, udi)
         if not device:
             return
-
-        port = str(device.GetProperty('serial.device'))
-
-        self.deviceInfo[udi]["path"] = port
-        self.deviceInfo[udi]["hal_device"] = device
-
-        # find the by-id path
-        by_id = [p for p in glob.glob("/dev/serial/by-id/*") if os.path.realpath(p) == port]
-        if by_id:
-            self.deviceInfo[udi]["unique_path"] = by_id[0]
+        log.msg("Serial port found: %s" % self.deviceInfo[udi]["unique_path"])
         self.serialPortAdded(udi, self.deviceInfo[udi])
 
 
