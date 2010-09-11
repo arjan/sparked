@@ -21,9 +21,9 @@ def refresh_plugin_cache():
 
 if sys.argv[1] == "build":
     commands = [
-        'PYTHONPATH=. help2man --no-info --include=man-sparkd.txt --name="The Sparked application launcher" ./bin/sparkd --output=doc/sparkd.1',
+        'PYTHONPATH=. help2man --no-info --include=doc/man-sparkd.txt --name="The Sparked application launcher" ./bin/sparkd --output=doc/sparkd.1',
         ]
-    if os.path.exists("man-sparkd.txt"):
+    if os.path.exists("doc/man-sparkd.txt"):
         try:
             help2man = procutils.which("help2man")[0]
         except IndexError:
