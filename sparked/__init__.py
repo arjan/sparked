@@ -27,4 +27,4 @@ Spark
 
 """
 
-__version__ = "0.5unreleased"
+__version__ = "0.5"
