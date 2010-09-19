@@ -13,8 +13,7 @@ from twisted.application import service
 from twisted.python import log, usage, filepath
 from twisted.internet import reactor
 
-from sparked import gui, monitors, __version__
-from sparked.graphics import stage
+from sparked import monitors, __version__
 
 
 class Application(service.MultiService):
@@ -55,55 +54,17 @@ class Application(service.MultiService):
 
         self.state = StateMachine(self)
 
-        reactor.callLater(0, self.startUp)
+        self.createMonitors()
+
         reactor.callLater(0, self.state.set, "start")
+        reactor.callLater(0, self.started)
 
 
-    def startUp(self):
+    def started(self):
         """
-        Create all services and GUI objects as needed.
+        The application has just been started. Add your own services,
+        create the stage, the status windows, etc, etc, here.
         """
-
-        self.monitors = self.createMonitors()
-
-        self.statusWindow = self.createStatusWindow()
-
-        if not self.statusWindow:
-            # If there is no status window, make sure the monitors talk to us in the log.
-            self.monitors.verbose = True
-        else:
-            # Shutdown when status window is closed
-            gui.guiEvents.addObserver("statuswindow-closed", lambda _: reactor.stop())
-
-        self.stage = self.createStage()
-        if self.stage:
-            # shutdown when stage is closed
-            stage.stageEvents.addObserver("stage-closed", lambda _: reactor.stop())
-            # go fullscreen if not --debug
-            if not self.baseOpts['debug']:
-                self.stage.toggleFullscreen()
-
-
-    def createStatusWindow(self):
-        """
-        Create the status window
-
-        If your application does not need a status window, override
-        this method in your application's subclass and return
-        C{False}. This removes the dependency on the C{gtk} library.
-        """
-        return gui.StatusWindow(self)
-
-
-    def createStage(self):
-        """
-        Create the graphics stage.
-
-        If your application does not need a graphics stage, override
-        this method in your application's subclass and return
-        C{False}. This removes the dependency on the C{clutter} library.
-        """
-        return stage.Stage(self)
 
 
     def createMonitors(self):
@@ -112,7 +73,11 @@ class Application(service.MultiService):
         m.addMonitor(monitors.NetworkMonitor())
         m.addMonitor(monitors.NetworkWebMonitor())
 
-        m.setServiceParent(self)
+        # Make sure the monitors talk to us in the log.
+        m.verbose = True
+
+        reactor.callLater(0, m.setServiceParent, self)
+        self.monitors = m
         return m
 
 
@@ -179,10 +144,10 @@ class Options (usage.Options):
         if self.appName:
             m = __import__(self.appName)
             if hasattr(m, "__version__"):
-                v = m.__version__
+                v = m.__version__+" "
             else:
                 v = ""
-            print "%s %s (sparked %s)" % (self.appName, v, __version__)
+            print "%s %s(sparked %s)" % (self.appName, v, __version__)
         exit(0)
 
 

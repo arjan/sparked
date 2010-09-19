@@ -9,6 +9,7 @@ from datetime import datetime
 import gtk
 
 from twisted.python import log
+from twisted.internet import reactor
 from sparked import events
 
 
@@ -28,6 +29,14 @@ class StatusWindow (gtk.Window):
 
         self.build()
         log.addObserver(self.log)
+        self.created()
+
+
+    def created(self):
+        """
+        Called when the status window has been created and is showing
+        on the screen. Override to add custom functionality.
+        """
 
 
     def build(self):
@@ -54,6 +63,7 @@ class StatusWindow (gtk.Window):
     def closed(self, window):
         log.removeObserver(self.log)
         guiEvents.dispatch("statuswindow-closed", window)
+        reactor.stop()
 
 
     def log(self, dict):

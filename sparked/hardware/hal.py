@@ -36,51 +36,54 @@ class HardwareMonitor (service.Service):
     @ivar subsystem: The HAL subsystem type to monitor. E.g. serial, video4linux, ...
     @ivar deviceInfo: dict which will be filled with device information. Key is the HAL UDI (Unique Device Identifier).
     @ivar uniquePath: If set, point to a directory where the symlinks to the unique devices will be made, e.g. /dev/serial/by-id/
+    @ivar events: If set, point to a L{sparked.events.EventDispatcher} to dispatch <subsystem>-{added,removed} events to.
     """
 
     subsystem = None
     deviceInfo = None
     uniquePath = None
+    events = None
 
 
     def startService(self):
         self.deviceInfo = {}
         self.bus = dbus.SystemBus()
-        self.bus.add_signal_receiver(self.deviceAdded,
+        self.bus.add_signal_receiver(self._halDeviceAdded,
                                 dbus_interface=HAL_MANAGER_INTERFACE,
                                 signal_name='DeviceAdded')
-        self.bus.add_signal_receiver(self.deviceRemoved,
+        self.bus.add_signal_receiver(self._halDeviceRemoved,
                                 dbus_interface=HAL_MANAGER_INTERFACE,
                                 signal_name='DeviceRemoved')
 
-        self.manager = self.getHalInterface(HAL_MANAGER_UDI, HAL_MANAGER_INTERFACE)
+        self.manager = self._getHalInterface(HAL_MANAGER_UDI, HAL_MANAGER_INTERFACE)
 
         for udi in self.manager.FindDeviceByCapability(self.subsystem):
-            reactor.callLater(0, self.deviceAdded, udi)
+            reactor.callLater(0, self._halDeviceAdded, udi)
 
 
     def stopService(self):
         udis = self.deviceInfo.keys()
         for udi in udis:
-            self.deviceRemoved(udi)
+            self._halDeviceRemoved(udi)
 
 
-    def getHalInterface(self, udi, interface=HAL_DEVICE_INTERFACE):
+    def _getHalInterface(self, udi, interface=HAL_DEVICE_INTERFACE):
         obj = self.bus.get_object(HAL_INTERFACE, udi)
         return dbus.Interface(obj, interface)
 
 
-    def deviceAdded(self, udi):
+    def _halDeviceAdded(self, udi):
+        udi = str(udi)
         if not self.manager.DeviceExists(udi):
             # device has been removed
             return
-        device = self.getHalInterface(udi)
+        device = self._getHalInterface(udi)
 
         if not device.QueryCapability(self.subsystem):
             # wrong device
             return
 
-        self.deviceInfo[udi] = {}
+        self.deviceInfo[udi] = {"udi": udi}
 
         if self.subsystem in HAL_SUBSYSTEM_PROPERTIES:
             for k in HAL_SUBSYSTEM_PROPERTIES[self.subsystem]:
@@ -92,9 +95,37 @@ class HardwareMonitor (service.Service):
             if by_id:
                 self.deviceInfo[udi]["unique_path"] = by_id[0]
 
+        if self.events:
+            self.events.dispatch("%s-added" % self.subsystem, info=self.deviceInfo[udi])
+
+        self.deviceAdded(self.deviceInfo[udi])
         return device
 
 
-    def deviceRemoved(self, udi):
-        if udi in self.deviceInfo:
-            del self.deviceInfo[udi]
+    def _halDeviceRemoved(self, udi):
+        udi = str(udi)
+        if udi not in self.deviceInfo:
+            return
+
+        if self.events:
+            self.events.dispatch("%s-removed" % self.subsystem, info=self.deviceInfo[udi])
+
+        self.deviceRemoved(self.deviceInfo[udi])
+        del self.deviceInfo[udi]
+
+
+    def deviceAdded(self, info):
+        """
+        This method will be called when a device has been added. If
+        you subclass this class, this method can be overruled to do
+        application-specific stuff.
+        """
+
+
+    def deviceRemoved(self, info):
+        """
+        This method will be called when a device has been removed. If
+        you subclass this class, this method can be overruled to do
+        application-specific stuff.
+        """
+

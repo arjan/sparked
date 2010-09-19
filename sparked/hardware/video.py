@@ -5,6 +5,7 @@ import gst
 
 from twisted.python import log
 
+from sparked import events
 from sparked.hardware import hal
 
 
@@ -13,14 +14,21 @@ class V4LDeviceMonitor (hal.HardwareMonitor):
     Video device monitor.
     """
     subsystem = "video4linux"
+    uniquePath = "/dev/v4l/by-id/"
+
+    def __init__(self):
+        self.events = videoEvents
+
+videoEvents = events.EventDispatcher()
+""" Event dispatcher for serial events """
 
 
 
 class V4LDevice (object):
-
     """
     Represents a V4L video input device.
     """
+
     def __init__(self, device, v4l2version=2):
         self.preferMimes = ["image/jpeg", "video/x-raw-yuv", "video/x-raw-rgb"]
         self.setDevice(device, v4l2version)
@@ -70,7 +78,7 @@ class V4LDevice (object):
         self.device = device
 
         self.v4l2version = v4l2version
-        if self.v4l2version == 2:
+        if str(self.v4l2version) == '2':
             self.gstSrc = "v4l2src"
         else:
             self.gstSrc = "v4lsrc"

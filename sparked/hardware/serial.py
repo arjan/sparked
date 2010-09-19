@@ -10,7 +10,6 @@ Autodetection of plugged in serialport devices and protocol probing.
 
 from zope.interface import Interface, Attribute
 
-from twisted.python import log
 from twisted.internet import protocol, defer, reactor
 from twisted.internet.serialport import SerialPort
 
@@ -24,27 +23,8 @@ class SerialPortMonitor (hal.HardwareMonitor):
     """
     subsystem = "serial"
 
-    def deviceAdded(self, udi):
-        device = hal.HardwareMonitor.deviceAdded(self, udi)
-        if not device:
-            return
-        log.msg("Serial port found: %s" % self.deviceInfo[udi]["unique_path"])
-        self.serialPortAdded(udi, self.deviceInfo[udi])
-
-
-    def deviceRemoved(self, udi):
-        if udi in self.deviceInfo:
-            self.serialPortRemoved(udi, self.deviceInfo[udi])
-        hal.HardwareMonitor.deviceRemoved(self, udi)
-
-
-    def serialPortAdded(self, udi, info):
-        serialEvents.dispatch("serialport-added", udi=udi, info=info)
-
-
-    def serialPortRemoved(self, udi, info):
-        serialEvents.dispatch("serialport-removed", udi=udi, info=info)
-
+    def __init__(self):
+        self.events = serialEvents
 
 serialEvents = events.EventDispatcher()
 """ Event dispatcher for serial events """
@@ -55,12 +35,12 @@ class IProtocolProbe(Interface):
     probeRequest = Attribute("""
         What to send to the serial port on connection.
         """)
-    
+
     probeResponse = Attribute("""
         What to receive from the serial port. When this is a string,
         the serialport is expected to return exactly this.
 
-        If this attribute is callable as staticmethod(), a boolean
+        If this attribute is callable as a static method, a boolean
         return value determines whether the probe is successful or
         not. If None is returned, there is not enough data yet and the
         function will be called again when data arrives again.

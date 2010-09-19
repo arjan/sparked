@@ -18,22 +18,36 @@ from sparked import events
 
 
 class Stage (clutter.Stage):
+    """
+    Stage class.
 
+    @ivar keys: Keymap with commonly used keys and their actions.
+    @ivar debug: Whether debugging is enabled. This is retrieved from the --debug flag from the sparkd runner.
+    """
+    
     keys = {'fullscreen': gtk.keysyms.F11,
             'quit': (clutter.CONTROL_MASK, gtk.keysyms.q)}
-
+    debug = False
+    
     def __init__(self, app):
         clutter.Stage.__init__(self)
         self.app = app
         self.app.state.addListener(self)
         self.show()
-        self.set_title(app.title + " - Graphics")
+        self.set_title(app.title + " - Stage")
 
         self.connect("destroy", lambda _: stageEvents.dispatch("stage-closed", self))
         self.connect("key-press-event", self.keyPress)
 
         self.debug = self.app.baseOpts['debug']
         self.addMonitors()
+
+        # shutdown when stage is closed
+        stageEvents.addObserver("stage-closed", lambda _: reactor.stop())
+        # go fullscreen if not --debug
+        if not self.debug:
+            self.toggleFullscreen()
+
         self.created()
 
 
