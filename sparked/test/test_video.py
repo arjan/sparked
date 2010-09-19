@@ -29,11 +29,6 @@ class TestVideoUtil(unittest.TestCase):
 
 class TestVideoDevices(unittest.TestCase):
 
-    def setUp(self):
-        self.dev = video.V4LVideoDevice("/dev/zero")
-        self.dev._resolutions = []
-        self.dev._resolutions.append( {"width": 320, "height": 240, "framerate": gst.Fraction(10,1)} )
-
 
     def testSelectBest(self):
         dev = video.V4LVideoDevice("/dev/zero")
@@ -61,12 +56,19 @@ class TestVideoDevices(unittest.TestCase):
         self.assertEqual({"width": 320, "height": 240, "framerate": gst.Fraction(30,1)}, dev.getHighestResolution())
 
         dev._resolutions = []
+        dev._resolutions.append( {"width": 320, "height": 240, "framerate": gst.Fraction(10,1), "mime": "video/x-raw-yuv"})
+        dev._resolutions.append( {"width": 320, "height": 240, "framerate": gst.Fraction(10,1), "mime": "image/jpeg"})
+        dev._resolutions.append( {"width": 320, "height": 240, "framerate": gst.Fraction(10,1), "mime": "video/x-raw-rgb"})
+        self.assertEqual({"width": 320, "height": 240, "framerate": gst.Fraction(10,1), "mime": "image/jpeg"}, dev.getHighestResolution())
+
+        dev._resolutions = []
         dev._resolutions.append( {"mime": "image/jpeg", "width": 320, "height": 240})
         dev._resolutions.append( {"mime": "video/x-raw-rgb", "width": 1000, "height": 1000})
         dev._resolutions.append( {"mime": "image/jpeg", "width": 321, "height": 241})
         self.assertEqual({"mime": "image/jpeg", "width": 321, "height": 241}, dev.getHighestResolution(mime="image/jpeg"))
         self.assertEqual({"mime": "image/jpeg", "width": 321, "height": 241}, dev.getResolution("auto", mime="image/jpeg"))
         self.assertEqual({"mime": "image/jpeg", "width": 321, "height": 241}, dev.getResolution("highest", mime="image/jpeg"))
+
 
         dev._resolutions = []
         dev._resolutions.append( {"mime": "image/jpeg", "framerate": gst.Fraction(10,1)})
@@ -146,3 +148,10 @@ class TestVideoDevices(unittest.TestCase):
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
         dev._resolutions.append( {"width": 640, "height": 480, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
         self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=640,height=480,framerate=30/1", dev.getPipeline())
+
+
+        dev._resolutions = []
+        dev._resolutions.append( {"width": 640, "height": 480, "mime": "video/x-raw-rgb", "framerate": gst.Fraction(30,1)})
+        dev._resolutions.append( {"width": 640, "height": 480, "mime": "video/x-raw-yuv", "framerate": gst.Fraction(30,1)})
+        self.assertEqual("v4l2src device=/dev/zero ! video/x-raw-yuv,width=640,height=480,framerate=30/1", dev.getPipeline())
+        self.assertEqual("v4l2src device=/dev/zero ! video/x-raw-yuv,width=640,height=480,framerate=30/1 ! ffmpegcolorspace ! video/x-raw-rgb", dev.getPipeline("video/x-raw-rgb"))

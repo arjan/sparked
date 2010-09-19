@@ -74,6 +74,7 @@ class V4LVideoDevice (object):
         """
         mxres = 0
         mx = None
+        pref = self.preferMimes
         for r in self.resolutions:
             if mime and r['mime'] != mime:
                 continue
@@ -82,7 +83,8 @@ class V4LVideoDevice (object):
                 mxres = r['width']*r['height']
             elif r['width']*r['height']==mxres and float(r['framerate'])>float(mx['framerate']):
                 mx = r
-
+            elif r['width']*r['height']==mxres and float(r['framerate'])==float(mx['framerate']) and pref.index(r['mime'])<pref.index(mx['mime']):
+                mx = r
         return mx
 
 
@@ -93,6 +95,7 @@ class V4LVideoDevice (object):
         """
         mxfr = None
         mx = None
+        pref = self.preferMimes
         for r in self.resolutions:
             if mime and r['mime'] != mime:
                 continue
@@ -100,6 +103,8 @@ class V4LVideoDevice (object):
                 mx = r
                 mxfr = r['framerate']
             elif float(r['framerate'])==float(mxfr) and r['width']*r['height']>mx['width']*mx['height']:
+                mx = r
+            elif float(r['framerate'])==float(mxfr) and r['width']*r['height']==mx['width']*mx['height'] and pref.index(r['mime'])<pref.index(mx['mime']):
                 mx = r
 
         return mx
