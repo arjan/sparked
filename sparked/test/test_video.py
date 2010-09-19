@@ -31,7 +31,7 @@ class TestVideoDevices(unittest.TestCase):
 
 
     def testSelectBest(self):
-        dev = video.V4LVideoDevice("/dev/zero")
+        dev = video.V4LDevice("/dev/zero")
 
         dev._resolutions = []
         dev._resolutions.append( {"mime": "image/jpeg"})
@@ -129,7 +129,7 @@ class TestVideoDevices(unittest.TestCase):
 
 
     def testGetPipeline(self):
-        dev = video.V4LVideoDevice("/dev/zero")
+        dev = video.V4LDevice("/dev/zero")
 
         dev._resolutions = []
         self.assertRaises(ValueError, dev.getPipeline)

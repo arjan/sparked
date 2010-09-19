@@ -5,8 +5,18 @@ import gst
 
 from twisted.python import log
 
+from sparked.hardware import hal
 
-class V4LVideoDevice (object):
+
+class V4LDeviceMonitor (hal.HardwareMonitor):
+    """
+    Video device monitor.
+    """
+    subsystem = "video4linux"
+
+
+
+class V4LDevice (object):
 
     """
     Represents a V4L video input device.
