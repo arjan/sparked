@@ -127,6 +127,18 @@ class TestVideoDevices(unittest.TestCase):
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg"})
         self.assertEqual({"width": 320, "height": 240, "mime": "image/jpeg"}, dev.getResolution("320x240", "image/jpeg"))
 
+
+    def testGetPipeline(self):
+        dev = video.V4LVideoDevice("/dev/zero")
+
+        dev._resolutions = []
+        self.assertRaises(ValueError, dev.getPipeline)
+
+        dev._resolutions = []
+        dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
+        dev._resolutions.append( {"width": 640, "height": 480, "mime": "image/jpeg", "framerate": gst.Fraction(15,1)})
+        self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=640,height=480,framerate=15/1", dev.getPipeline())
+
         dev._resolutions = []
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
         self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=320,height=240,framerate=30/1", dev.getPipeline())
@@ -137,12 +149,12 @@ class TestVideoDevices(unittest.TestCase):
         dev._resolutions = []
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
         dev._resolutions.append( {"width": 640, "height": 480, "mime": "image/jpeg", "framerate": gst.Fraction(15,1)})
-        self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=320,height=240,framerate=30/1", dev.getPipeline())
+        self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=640,height=480,framerate=15/1", dev.getPipeline())
 
         dev._resolutions = []
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})
         dev._resolutions.append( {"width": 640, "height": 480, "mime": "image/jpeg", "framerate": gst.Fraction(15,1)})
-        self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=320,height=240,framerate=30/1", dev.getPipeline())
+        self.assertEqual("v4l2src device=/dev/zero ! image/jpeg,width=640,height=480,framerate=15/1", dev.getPipeline())
 
         dev._resolutions = []
         dev._resolutions.append( {"width": 320, "height": 240, "mime": "image/jpeg", "framerate": gst.Fraction(30,1)})

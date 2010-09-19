@@ -143,12 +143,14 @@ class V4LVideoDevice (object):
         return mx
 
 
-    def getPipeline(self, outputMime=None, resolution="fastest"):
+    def getPipeline(self, outputMime=None, resolution="auto"):
         """
         Construct a string which is parsable as the "input" part of the pipeline for a gstreamer camera.
         """
 
         r = self.getResolution(resolution)
+        if r is None:
+            raise ValueError("Unsupported resolution: "+resolution)
         w, h = r['width'], r['height']
         inputMime = r['mime']
         framerate = r['framerate']
