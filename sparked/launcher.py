@@ -134,6 +134,8 @@ def launchLoop(app, options, env, appPath):
 
 
 def loadModule(app):
+    args = sys.argv[:]
+    sys.argv = []
     if app[-3:] == ".py" and os.path.exists(app):
         path = os.path.dirname(app)
         if not path: path = "."
@@ -145,6 +147,7 @@ def loadModule(app):
     except ImportError, e:
         log.err(e)
         raise usage.UsageError("Application not found: " + app)
+    sys.argv = args
     return mod, app
 
 
