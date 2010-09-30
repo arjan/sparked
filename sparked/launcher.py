@@ -144,8 +144,8 @@ def loadModule(app):
 
     try:
         mod = __import__(app, None, None, app.split(".")[-1])
-    except ImportError, e:
-        log.err(e)
+    except ImportError:
+        sys.argv = args
         raise usage.UsageError("Application not found: " + app)
     sys.argv = args
     return mod, app
@@ -188,16 +188,15 @@ def main():
         if not options['pidfile']:
             options['pidfile'] = appPath.child("sparkd.pid").path
 
-
         if options['no-subprocess']:
             run(appName)
         else:
             launchLoop(appName, options, env, appPath)
 
-
     except usage.UsageError, errortext:
-        print '%s: %s' % (sys.argv[0], errortext)
-        print '%s: Try --help for usage details.' % (sys.argv[0])
+        print 'sparkd: %s' % errortext
+        print 'Try sparkd --help for usage details.'
+        print
         sys.exit(1)
 
 
