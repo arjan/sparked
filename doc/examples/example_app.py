@@ -2,7 +2,16 @@
 # See LICENSE for details.
 
 """
-Example runner class for sparked.
+A simple example runner class for Sparked. It publishes a zeroconf
+service, 'Test service', and creates a monitor which checks if this
+'Test service' is available (normally, you would do that in a second,
+'client' app.
+
+The apps state machine 'pingpongs' between 'start' <-> 'ping'. There
+is a commandline option which lets this pingponging go faster.
+
+Try sparkd example_app.py --help to view the generated usage options
+for this app.
 """
 
 from sparked import application, monitors
@@ -20,14 +29,12 @@ class Application(application.Application):
     
     def startService(self):
         application.Application.startService(self)
-        
-        zeroconfService.subscribeTo("_daap._tcp")
-        
+
         if self.appOpts['fast']:
             self.delay = 1
         else:
             self.delay = 10
-        zeroconfService.publishService("Test muziek2", "_daap._tcp", 3333)
+        zeroconfService.publishService("Test service", "_daap._tcp", 3333)
 
 
     def enter_start(self):
@@ -38,13 +45,7 @@ class Application(application.Application):
         self.state.setAfter("start", self.delay)
 
 
-    def createStage(self):
-        return False
-
-
     def createMonitors(self):
         m = application.Application.createMonitors(self)
-
-        m.addMonitor(monitors.NamedZeroconfMonitor("_daap._tcp", "Test muziek"))
-
+        m.addMonitor(monitors.NamedZeroconfMonitor("Test service", "_daap._tcp"))
         return m
