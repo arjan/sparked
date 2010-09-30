@@ -121,3 +121,7 @@ class VideoMonitor(video.V4LDeviceMonitor):
     def deviceRemoved(self, i):
         self.app.webserver.removeDevice(i)
 
+
+if __name__ == "__main__":
+    from sparked import launcher
+    launcher.launchHelp(__file__)

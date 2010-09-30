@@ -2,7 +2,7 @@
 # See LICENSE for details.
 
 """
-The sparked application launcher.
+The Sparked application launcher.
 
 Sparked applications are launched in a subprocess: so that if the
 application crashes, it is started again.
@@ -150,6 +150,13 @@ def loadModule(app):
     sys.argv = args
     return mod, app
 
+
+def launchHelp(app):
+    print "This file is a Sparked application, and is meant to run like this:"
+    print
+    print " sparkd " + app
+    print
+    exit(1)
 
 
 def main():
