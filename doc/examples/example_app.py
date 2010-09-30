@@ -27,9 +27,7 @@ class Application(application.Application):
 
     title = "Spark example"
     
-    def startService(self):
-        application.Application.startService(self)
-
+    def started(self):
         if self.appOpts['fast']:
             self.delay = 1
         else:

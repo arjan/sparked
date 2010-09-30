@@ -1,4 +1,3 @@
-from twisted.internet import reactor
 from sparked.hardware.inputevent import InputEventDevice, InputEventProtocol, EV_KEY, EV_REL
 
 class PowermateProtocol (InputEventProtocol):
@@ -9,6 +8,13 @@ class PowermateProtocol (InputEventProtocol):
         if e.etype == EV_REL:
             print "Move", e.evalue
 
-d = InputEventDevice(PowermateProtocol(), "/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00", reactor)
 
-reactor.run()
+from sparked import application
+
+class Application(application.Application):
+
+    title = "Griffin PowerMate example"
+
+    def started(self):
+        path = "/dev/input/by-id/usb-Griffin_Technology__Inc._Griffin_PowerMate-event-if00"
+        self.powermate = InputEventDevice(PowermateProtocol(), path)
