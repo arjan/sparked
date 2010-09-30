@@ -40,7 +40,7 @@ setup(
     version = sparked.__version__,
     author = "Arjan Scherpenisse",
     author_email = "arjan@scherpenisse.net",
-    url = "http://scherpenisse.net/spark",
+    url = "http://scherpenisse.net/sparked",
     description = "Application development framework for interactive installations",
     scripts = [
         "bin/sparkd"
