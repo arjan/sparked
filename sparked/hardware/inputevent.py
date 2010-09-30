@@ -123,7 +123,9 @@ class InputEventDevice(abstract.FileDescriptor):
 
     connected = 1
 
-    def __init__(self, protocol, deviceName, reactor):
+    def __init__(self, protocol, deviceName, reactor=None):
+        if reactor is None:
+            from twisted.internet import reactor
         abstract.FileDescriptor.__init__(self, reactor)
         self._fileno = os.open(deviceName, os.O_RDONLY | os.O_NONBLOCK)
         self.reactor = reactor
