@@ -48,6 +48,8 @@ setup(
     license="MIT/X",
     packages = ['sparked',
                 'sparked.hardware',
+                'sparked.internet',
+                'sparked.graphics',
                 'sparked.test',
                 'twisted.plugins'],
     package_data={'twisted.plugins': ['twisted/plugins/sparked.py']},
