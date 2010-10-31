@@ -185,6 +185,8 @@ def getPath(kind, appName, appId, containPath=None):
     base = appId or appName
 
     if kind == "temp":
+        if containPath:
+            return prefix.child("tmp")
         return prefix.child("tmp").child(base)
     elif kind == "log":
         varlog = (containPath and prefix or prefix.child("var").child("log"))

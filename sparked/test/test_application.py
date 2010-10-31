@@ -19,7 +19,7 @@ class TestGetPath(unittest.TestCase):
     def testTempPaths(self):
         self.assertEqual("/tmp/foo", getPath("temp", "foo", None).path)
         self.assertEqual("/tmp/bar", getPath("temp", "foo", "bar").path)
-        self.assertEqual("/some/prefix/tmp/foo", getPath("temp", "foo", None, "/some/prefix").path)
+        self.assertEqual("/some/prefix/tmp", getPath("temp", "foo", None, "/some/prefix").path)
 
 
     def testLogPaths(self):

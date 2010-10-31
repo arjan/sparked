@@ -67,6 +67,7 @@ class QuitFlag:
 
 
     def isSet(self):
+        print 1111111111, self.file.path
         try:
             return self.file.open("r").readlines()[0] == "quit"
         except:

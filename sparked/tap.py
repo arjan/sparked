@@ -61,6 +61,12 @@ def makeService(config):
     # Set the name
     s.setName(config.appName)
 
+    # make sure the relevant paths exist
+    for kind in ["temp", "data"]:
+        path = s.path(kind)
+        if not path.exists():
+            path.createDirectory()
+
     # Set up logging in /tmp/log, maximum 9 rotated log files.
     logFile = s.path("log")
     if not logFile.parent().exists():
