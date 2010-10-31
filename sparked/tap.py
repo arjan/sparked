@@ -48,31 +48,24 @@ def makeService(config):
     # Instantiate the main application
     s = config.module.Application(config.opts, config.appOpts)
 
+    # Assign appliation name
+    s.appName = config.appName
     # Assign the 'application id'
-    if config.opts['id']:
-        s.id = config.opts['id']
-    else:
-        s.id = config.appName
-
-    # assign temppath
-    s.tempPath = application.getTempPath(config.appName, s.id)
+    s.id = config.opts['id']
+    # Asign the containment path (if any)
+    s.containPath = config.opts['contain-path']
 
     # Set quitflag 
-    s.quitFlag = launcher.QuitFlag(s.tempPath.child("quitflag"))
+    s.quitFlag = launcher.QuitFlag(s.path("temp").child("quitflag"))
 
     # Set the name
     s.setName(config.appName)
 
     # Set up logging in /tmp/log, maximum 9 rotated log files.
-    if config.opts['logfile']:
-        logfile = config.opts['logfile']
-        logDir = FilePath(logfile).parent()
-        if not logDir.exists():
-            logDir.createDirectory()
-    else:
-        logfile = 'sparkd.log'
-        logDir = s.tempPath
-    logFile = LogFile(logfile, logDir.path, maxRotatedFiles=9)
+    logFile = s.path("log")
+    if not logFile.parent().exists():
+        logFile.parent().createDirectory()
+    logFile = LogFile.fromFullPath(s.path("log").path, maxRotatedFiles=9)
     log.addObserver(log.FileLogObserver(logFile).emit)
 
     return s

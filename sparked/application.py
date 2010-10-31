@@ -1,5 +1,6 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
+# -*- test-case-name:  xsparked.test.test_application -*-
 
 """
 The base application class.
@@ -46,6 +47,10 @@ class Application(service.MultiService):
     statusWindow = None
     stage = None
 
+    appName = None
+    appId = None
+    containPath = None
+
 
     def __init__(self, baseOpts, appOpts):
         service.MultiService.__init__(self)
@@ -61,6 +66,16 @@ class Application(service.MultiService):
 
         reactor.callLater(0, self.state.set, "start")
         reactor.callLater(0, self.started)
+
+
+    def path(self, kind):
+        """
+        Return the path (a L{filepath.FilePath}) for this application
+        for a given path kind. Kind is one of: temp, log, pid, share,
+        data. The paths returned depend on the sys.prefix, the
+        application path prefix, the appName and the appId.
+        """
+        return getPath(kind, self.appName, self.appId, self.containPath)
 
 
     def started(self):
@@ -159,15 +174,35 @@ class Options (usage.Options):
 
 
 
-def getTempPath(modulename, id=None):
-    if id:
-        path = id
-    else:
-        path = modulename
-    p = filepath.FilePath(tempfile.gettempdir()).child(path)
-    if not p.exists():
-        p.createDirectory()
-    return p
+def getPath(kind, appName, appId, containPath=None):
+    """
+    Return the path (a L{filepath.FilePath}) for this application
+    for a given path kind. Kind is one of: temp, log, pid, share,
+    data. The paths returned depend on the sys.prefix, the
+    application path prefix, the appName and the appId.
+    """
+    prefix = filepath.FilePath(containPath or "/")
+    base = appId or appName
+
+    if kind == "temp":
+        return prefix.child("tmp").child(base)
+    elif kind == "log":
+        varlog = (containPath and prefix or prefix.child("var").child("log"))
+        return varlog.child((base)+".log")
+    elif kind == "pid":
+        varrun = (containPath and prefix or prefix.child("var").child("run"))
+        return varrun.child((base)+".pid")
+    elif kind == "share":
+        # shared data of all kinds
+        if containPath:
+            return prefix.child("share")
+        return prefix.child("usr").child("share").child(appName)
+    elif kind == "data":
+        # instance-specific data
+        varlib = (containPath and prefix or prefix.child("var").child("lib"))
+        return varlib.child(base)
+    raise ValueError("Unknown path kind: " + kind)
+
 
 
 class StateMachine (object):

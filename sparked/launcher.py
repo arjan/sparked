@@ -32,9 +32,8 @@ class Options(usage.Options):
                 ]
 
     optParameters = [
-            ('id', None, None, 'Application id (defaults to the sparked module name)'),
-            ('pidfile', None, None, 'Pidfile location (defaults to /tmp/<id>/sparkd.pid)'),
-            ('logfile', None, None, 'Pidfile location (defaults to /tmp/<id>/sparkd.log)')
+            ('id', None, None, 'Application instance id (defaults to the sparked module name)'),
+            ('contain-path', 'c', None, 'Containment path for grouping all application-related data under one prefix')
             ]
 
 
@@ -114,8 +113,8 @@ def launch(baseOptions, env):
     return subprocess.call(argv, env=env)
 
 
-def launchLoop(app, options, env, appPath):
-    quitFlag = QuitFlag(appPath.child("quitflag"))
+def launchLoop(app, options, env, tempPath):
+    quitFlag = QuitFlag(tempPath.child("quitflag"))
     quitFlag.reset()
     respawned = False
     while True:
@@ -173,8 +172,6 @@ def main():
 
         appModule, appName = loadModule(appName)
 
-        appPath = application.getTempPath(appName, options['id'])
-
         if hasattr(appModule, 'Options'):
             opts = appModule.Options()
         else:
@@ -185,13 +182,12 @@ def main():
             opts.longdesc = appModule.__doc__
         opts.parseOptions(appOpts)
 
-        if not options['pidfile']:
-            options['pidfile'] = appPath.child("sparkd.pid").path
-
         if options['no-subprocess']:
             run(appName)
         else:
-            launchLoop(appName, options, env, appPath)
+            options['pidfile'] = application.getPath("pid", appName, options['id'], options['contain-path']).path
+            tempPath = application.getPath("temp", appName, options['id'], options['contain-path'])
+            launchLoop(appName, options, env, tempPath)
 
     except usage.UsageError, errortext:
         print 'sparkd: %s' % errortext
