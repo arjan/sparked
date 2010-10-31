@@ -5,6 +5,7 @@
 The base application class.
 """
 
+import signal
 import dbus
 import time
 import tempfile
@@ -55,6 +56,8 @@ class Application(service.MultiService):
         self.state = StateMachine(self)
 
         self.createMonitors()
+
+        signal.signal(signal.SIGUSR1, lambda sig, frame: self.reloadService())
 
         reactor.callLater(0, self.state.set, "start")
         reactor.callLater(0, self.started)
@@ -111,6 +114,10 @@ class Application(service.MultiService):
         self.screensaverInhibited = None
 
 
+    def reloadService(self):
+        """
+        Overrule this function to respond to the USR1 signal.
+        """
 
 
 class Options (usage.Options):

@@ -47,3 +47,7 @@ class Application(application.Application):
         m = application.Application.createMonitors(self)
         m.addMonitor(monitors.NamedZeroconfMonitor("Test service", "_daap._tcp"))
         return m
+
+
+    def reloadService(self):
+        print "I got the USR1 signal! I should do something to reload myself."
