@@ -44,6 +44,7 @@ class TestGetPath(unittest.TestCase):
     def testDataPaths(self):
         self.assertEqual("/var/lib/foo", getPath("data", "foo", None).path)
         self.assertEqual("/var/lib/bar", getPath("data", "foo", "bar").path)
+        self.assertEqual("/some/prefix/data", getPath("data", "foo", None, "/some/prefix/").path)
 
 
     def testInvalidPath(self):

@@ -201,8 +201,7 @@ def getPath(kind, appName, appId, containPath=None):
         return prefix.child("usr").child("share").child(appName)
     elif kind == "data":
         # instance-specific data
-        varlib = (containPath and prefix or prefix.child("var").child("lib"))
-        return varlib.child(base)
+        return (containPath and prefix.child("data") or prefix.child("var").child("lib").child(base))
     raise ValueError("Unknown path kind: " + kind)
 
 
