@@ -14,8 +14,8 @@ PLUGIN="${0##*/}"
 # Author: Arjan Scherpenisse <arjan@scherpenisse.net>
 
 DAEMON=/usr/bin/twistd
-PIDFILE=/tmp/$PLUGIN/sparked.pid
-LOGFILE=/tmp/$PLUGIN/sparked.log
+PIDFILE=/var/run/$PLUGIN.pid
+LOGFILE=/var/log/$PLUGIN.log
 DAEMON_OPTS="--pidfile $PIDFILE --logfile $LOGFILE sparked $PLUGIN"
 
 if [ ! -x $DAEMON ]; then
@@ -52,6 +52,18 @@ stop_service() {
   echo "done"
 }
 
+reload_service() {
+  echo -n " * Reloading $PLUGIN... "
+  start-stop-daemon -Kq -p $PIDFILE -s USR1
+  e=$?
+  if [ $e -eq 1 ]; then
+    echo "not running"
+    return
+  fi
+
+  echo "done"
+}
+
 case "$1" in
   start)
     start_service
@@ -63,11 +75,12 @@ case "$1" in
     stop_service
     start_service
     ;;
-  force-reload)
-    ;;        
+  force-reload|reload)
+    reload_service
+    ;;
   *)
     echo "Usage: /etc/init.d/$PLUGIN {start|stop|restart}" >&2
-    exit 1   
+    exit 1
     ;;
 esac
 

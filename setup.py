@@ -14,11 +14,6 @@ import sparked
 from twisted.python import procutils
 
 
-def refresh_plugin_cache():
-    from twisted.plugin import IPlugin, getPlugins
-    list(getPlugins(IPlugin))
-
-
 if sys.argv[1] == "build":
     commands = [
         'PYTHONPATH=. help2man --no-info --include=doc/man-sparkd.txt --name="The Sparked application launcher" ./bin/sparkd --output=doc/sparkd.1',
@@ -79,5 +74,3 @@ Like Twisted, Sparked is a python library and an application runner in once. Som
         "Topic :: Utilities"
         ]
     )
-
-refresh_plugin_cache()
