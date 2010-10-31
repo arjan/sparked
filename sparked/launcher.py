@@ -67,7 +67,6 @@ class QuitFlag:
 
 
     def isSet(self):
-        print 1111111111, self.file.path
         try:
             return self.file.open("r").readlines()[0] == "quit"
         except:
@@ -123,7 +122,7 @@ def launchLoop(app, options, env, tempPath):
         launch(options, env)
         if time.time() - start < 5:
             if respawned:
-                print "*** %s: respawning too fast ***" % app
+                sys.stderr.write("*** %s: respawning too fast ***\n" % app)
             break
         if quitFlag.isSet():
             break
@@ -132,8 +131,11 @@ def launchLoop(app, options, env, tempPath):
     quitFlag.reset()
 
 
-
 def loadModule(app):
+    """
+    Given an module or python file, load the module. Returns a tuple
+    containing the loaded module and the name of the app.
+    """
     args = sys.argv[:]
     sys.argv = []
     if app[-3:] == ".py" and os.path.exists(app):
