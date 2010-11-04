@@ -46,32 +46,25 @@ def makeService(config):
         raise usage.UsageError("Invalid application module: " + config.appName)
 
     # Instantiate the main application
-    s = config.module.Application(config.opts, config.appOpts)
+    s = config.module.Application(config.appName, config.opts, config.appOpts)
 
-    # Assign appliation name
-    s.appName = config.appName
-    # Assign the 'application id'
-    s.id = config.opts['id']
-    # Asign the containment path (if any)
-    s.containPath = config.opts['contain-path']
-
-    # Set quitflag 
+    # Set quitflag
     s.quitFlag = launcher.QuitFlag(s.path("temp").child("quitflag"))
 
     # Set the name
     s.setName(config.appName)
 
     # make sure the relevant paths exist
-    for kind in ["temp", "data"]:
+    for kind in ["temp", "db"]:
         path = s.path(kind)
         if not path.exists():
             path.createDirectory()
 
     # Set up logging in /tmp/log, maximum 9 rotated log files.
-    logFile = s.path("log")
+    logFile = s.path("logfile")
     if not logFile.parent().exists():
         logFile.parent().createDirectory()
-    logFile = LogFile.fromFullPath(s.path("log").path, maxRotatedFiles=9)
+    logFile = LogFile.fromFullPath(s.path("logfile").path, maxRotatedFiles=9)
     log.addObserver(log.FileLogObserver(logFile).emit)
 
     return s

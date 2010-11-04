@@ -29,20 +29,29 @@ class Options(usage.Options):
 
     optFlags = [["debug", "d", "Debug mode"],
                 ["no-subprocess", "N", "Do not start a subprocess for crash prevention"],
+                ["system-paths", "s", """Setup the application paths so that the app is run as a
+                system-wide application. The paths are according to the Filesystem Hierarchy Standard:
+                respectively /tmp/<id>/; /var/log/<id>.log; /var/run/<id>.pid; /usr/share/<application>/; /var/lib/<id>/.
+                """],
                 ]
 
     optParameters = [
-            ('id', None, None, 'Application instance id (defaults to the sparked module name)'),
-            ('contain-path', 'c', None, 'Containment path for grouping all application-related data under one prefix')
+            ('id', None, None, 'Application instance id (defaults to <application>)'),
+            ('temp-path', None, None, 'Temporary path (defaults to /tmp/<id>/'),
+            ('logfile', None, None, 'Logfile. Defaults to <temp-path>/sparkd.log'),
+            ('pidfile', None, None, 'Process-id file. Defaults to <temp-path>/sparkd.pid'),
+            ('data-path', None, None, """Path where static application data is stored, like image files. Defaults to the "data" subdirectory of the current directory."""),
+            ('db-path', None, None, """Path where instance-specific data is stored, like database files. Defaults to <temp-path>/db/"""),
             ]
 
 
     def getSynopsis(self):
-        return "sparkd [options] <application> [app_options]"
+        return "sparkd [options] <application> ..."
 
     def opt_version(self):
         print os.path.basename(sys.argv[0]), __version__
         exit(0)
+
 
 
 class QuitFlag:
@@ -188,8 +197,8 @@ def main():
         if options['no-subprocess']:
             run(appName)
         else:
-            options['pidfile'] = application.getPath("pid", appName, options['id'], options['contain-path']).path
-            tempPath = application.getPath("temp", appName, options['id'], options['contain-path'])
+            options['pidfile'] = application.getPath('pidfile', appName, opts).path
+            tempPath = application.getPath("temp", appName, opts)
             launchLoop(appName, options, env, tempPath)
 
     except usage.UsageError, errortext:
