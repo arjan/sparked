@@ -1,22 +1,28 @@
 #!/bin/sh
 
-PLUGIN="${0##*/}"
+APPLICATION="${0##*/}"
 
 ### BEGIN INIT INFO
-# Provides:          $PLUGIN
+# Provides:          $APPLICATION
 # Required-Start:    $all
 # Required-Stop:     $all
 # Default-Start:     2 3 4 5
 # Default-Stop:      0 1 6
-# Short-Description: Starts a service for the Sparked plugin '$PLUGIN'
+# Short-Description: Starts a service for the Sparked plugin '$APPLICATION'
 # Description:       Generic plugin starter for sparkd plugins
 ### END INIT INFO
 # Author: Arjan Scherpenisse <arjan@scherpenisse.net>
+UID=nobody
+GID=nogroup
+PIDFILE=/var/run/$APPLICATION.pid
+LOGFILE=/var/log/$APPLICATION.log
+touch $LOGFILE && chown $UID:$GID $LOGFILE
 
 DAEMON=/usr/bin/twistd
-PIDFILE=/var/run/$PLUGIN.pid
-LOGFILE=/var/log/$PLUGIN.log
-DAEMON_OPTS="--pidfile $PIDFILE --logfile $LOGFILE sparked $PLUGIN"
+DAEMON_OPTS="--pidfile $PIDFILE --uid $UID --gid $GID sparked -s $APPLICATION"
+
+DB=/var/lib/$APPLICATION
+mkdir -p $DB && chown -R $UID:$GID $DB
 
 if [ ! -x $DAEMON ]; then
   echo "ERROR: Can't execute $DAEMON."
@@ -24,7 +30,7 @@ if [ ! -x $DAEMON ]; then
 fi
 
 start_service() {
-  echo -n " * Starting $PLUGIN... "
+  echo -n " * Starting $APPLICATION... "
   start-stop-daemon -Sq -p $PIDFILE -x $DAEMON -- $DAEMON_OPTS
   e=$?
   if [ $e -eq 1 ]; then
@@ -41,19 +47,19 @@ start_service() {
 }
 
 stop_service() {
-  echo -n " * Stopping $PLUGIN... "
+  echo -n " * Stopping $APPLICATION... "
   start-stop-daemon -Kq -R 10 -p $PIDFILE
   e=$?
   if [ $e -eq 1 ]; then
     echo "not running"
     return
   fi
-
+  rm -f $PIDFILE
   echo "done"
 }
 
 reload_service() {
-  echo -n " * Reloading $PLUGIN... "
+  echo -n " * Reloading $APPLICATION... "
   start-stop-daemon -Kq -p $PIDFILE -s USR1
   e=$?
   if [ $e -eq 1 ]; then
@@ -79,7 +85,7 @@ case "$1" in
     reload_service
     ;;
   *)
-    echo "Usage: /etc/init.d/$PLUGIN {start|stop|restart}" >&2
+    echo "Usage: /etc/init.d/$APPLICATION {start|stop|restart}" >&2
     exit 1
     ;;
 esac
