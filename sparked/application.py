@@ -63,7 +63,12 @@ class Application(service.MultiService):
 
         self.createMonitors()
 
-        signal.signal(signal.SIGUSR1, lambda sig, frame: self.reloadService())
+        def doReload(prev):
+            if callable(prev):
+                prev()
+            self.reloadService()
+        prevHandler = signal.getsignal(signal.SIGUSR2)
+        signal.signal(signal.SIGUSR2, lambda sig, frame: doReload(prevHandler))
 
         reactor.callLater(0, self.state.set, "start")
         reactor.callLater(0, self.started)
@@ -132,7 +137,7 @@ class Application(service.MultiService):
 
     def reloadService(self):
         """
-        Overrule this function to respond to the USR1 signal.
+        Overrule this function to respond to the USR2 signal.
         """
 
 

@@ -12,14 +12,21 @@ APPLICATION="${0##*/}"
 # Description:       Generic plugin starter for sparkd plugins
 ### END INIT INFO
 # Author: Arjan Scherpenisse <arjan@scherpenisse.net>
+
 UID=nobody
 GID=nogroup
 PIDFILE=/var/run/$APPLICATION.pid
 LOGFILE=/var/log/$APPLICATION.log
+OPTIONS=""
+
+if [ -f /etc/default/$APPLICATION ]; then
+    source /etc/default/$APPLICATION
+fi
+
 touch $LOGFILE && chown $UID:$GID $LOGFILE
 
 DAEMON=/usr/bin/twistd
-DAEMON_OPTS="--pidfile $PIDFILE --uid $UID --gid $GID sparked -s $APPLICATION"
+DAEMON_OPTS="--pidfile $PIDFILE --uid $UID --gid $GID sparked -s $APPLICATION $OPTIONS"
 
 DB=/var/lib/$APPLICATION
 mkdir -p $DB && chown -R $UID:$GID $DB
@@ -60,7 +67,8 @@ stop_service() {
 
 reload_service() {
   echo -n " * Reloading $APPLICATION... "
-  start-stop-daemon -Kq -p $PIDFILE -s USR1
+  start-stop-daemon -Kq -p $PIDFILE -s USR1 # rotate logs
+  start-stop-daemon -Kq -p $PIDFILE -s USR2 # loadService() call in sparked Application
   e=$?
   if [ $e -eq 1 ]; then
     echo "not running"
