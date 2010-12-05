@@ -26,10 +26,10 @@ class Application(application.Application):
     def started(self):
 
         def found(proto, baudrate):
-            print ">>", proto, baudrate
-            reactor.stop()
+            print "MATCH >>", proto, baudrate
 
         probe = serialport.SerialProbe("/dev/ttyUSB0")
         probe.addCandidate(FooProtocol, 19200)
         d = probe.start()
         d.addCallbacks(found, log.err)
+        d.addCallback(lambda _: reactor.stop())
