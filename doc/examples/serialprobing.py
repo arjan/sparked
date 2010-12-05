@@ -10,13 +10,12 @@ from zope.interface import implements
 from twisted.python import log
 from twisted.internet import protocol, reactor
 
-import sparked.hardware.serial
+from sparked.hardware import serialport
 from sparked import application
 
 
-
 class FooProtocol(protocol.Protocol):
-#    implements (serial.IProtocolProbe)
+    implements (serialport.IProtocolProbe)
 
     probeRequest = "\xFF\x00\x01\x83\x84"
     probeResponse = "\xFF\x00\x02\x83\x4E\xD3"
@@ -30,7 +29,7 @@ class Application(application.Application):
             print ">>", proto, baudrate
             reactor.stop()
 
-        probe = sparked.hardware.serial.SerialProbe("/dev/ttyUSB0")
+        probe = serialport.SerialProbe("/dev/ttyUSB0")
         probe.addCandidate(FooProtocol, 19200)
         d = probe.start()
         d.addCallbacks(found, log.err)
