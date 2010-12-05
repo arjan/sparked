@@ -121,7 +121,10 @@ class SerialProbeProtocol(protocol.Protocol):
     current connection.
     """
 
-    def __init__(self, probe, timeout=0.5):
+    def __init__(self, probe, timeout=0.5, reactor=None):
+        if not reactor:
+            from twisted.internet import reactor
+        self.reactor = reactor
         self.probe = probe
         self.timeout = timeout
         self.d = defer.Deferred()
@@ -130,7 +133,7 @@ class SerialProbeProtocol(protocol.Protocol):
     def connectionMade(self):
         self.data = ""
         self.transport.write(self.probe.probeRequest)
-        self.timer = reactor.callLater(self.timeout, self.response, False)
+        self.timer = self.reactor.callLater(self.timeout, self.response, False)
 
 
     def dataReceived(self, data):
