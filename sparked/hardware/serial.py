@@ -10,6 +10,7 @@ Autodetection of plugged in serialport devices and protocol probing.
 
 from zope.interface import Interface, Attribute
 
+from twisted.python import log
 from twisted.internet import protocol, defer, reactor
 from twisted.internet.serialport import SerialPort
 
@@ -27,7 +28,7 @@ class SerialPortMonitor (hal.HardwareMonitor):
         self.events = serialEvents
 
 serialEvents = events.EventDispatcher()
-""" Event dispatcher for serial events """
+""" Global event dispatcher for all serial events """
 
 
 class IProtocolProbe(Interface):
@@ -48,14 +49,15 @@ class IProtocolProbe(Interface):
 
 
 
-class SerialProbeFactory(object):
-    pass
-
-
 
 
 
 class SerialProbe(object):
+    """
+    Request/response-based serial device fingerprinting. Given a
+    serial device, try a series of protocol+baudrate combinations to
+    see if they match.
+    """
 
     def __init__(self, device):
         self.candidates = []
@@ -79,7 +81,7 @@ class SerialProbe(object):
         probe, baudrate = self.candidates[0]
         del self.candidates[0]
 
-        print "Trying", probe
+        log.msg("Trying %s @ %d baud" % (probe, baudrate))
         proto = SerialProbeProtocol(probe)
         try:
             SerialPort(proto, self.device, reactor, baudrate=baudrate)
@@ -105,19 +107,26 @@ class SerialProbe(object):
 
 
 class SerialProbeProtocol(protocol.Protocol):
+    """
+    Internal protocol which tries if given IProtocolProbe fits the
+    current connection.
+    """
+
     def __init__(self, probe, timeout=0.5):
         self.probe = probe
         self.timeout = timeout
         self.d = defer.Deferred()
+
 
     def connectionMade(self):
         self.data = ""
         self.transport.write(self.probe.probeRequest)
         self.timer = reactor.callLater(self.timeout, self.response, False)
 
+
     def dataReceived(self, data):
         self.data += data
-        
+
         if callable(self.probe.probeResponse):
             retval = self.probe.probeResponse(self.data)
         else:
