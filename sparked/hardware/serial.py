@@ -10,6 +10,8 @@ Autodetection of plugged in serialport devices and protocol probing.
 
 from zope.interface import Interface, Attribute
 
+import serial
+
 from twisted.python import log
 from twisted.internet import protocol, defer, reactor
 from twisted.internet.serialport import SerialPort
@@ -49,6 +51,8 @@ class IProtocolProbe(Interface):
 
 
 
+class SerialProbeException (Exception):
+    pass
 
 
 
@@ -66,15 +70,20 @@ class SerialProbe(object):
 
     def addCandidate(self, proto, baudrate=9600):
         if not IProtocolProbe.implementedBy(proto):
-            raise Exception("%s should implement IProtocolProbe" % proto)
+            raise SerialProbeException("%s should implement IProtocolProbe" % proto)
+        if baudrate not in serial.baudrate_constants.keys():
+            raise SerialProbeException("Invalid baud rate: %d" % baudrate)
 
         self.candidates.append( (proto, baudrate) )
 
 
     def start(self):
         self.deferred = defer.Deferred()
+        if not self.candidates:
+            return defer.fail(SerialProbeException("No protocols to probe"))
         self._next()
         return self.deferred
+        
     
 
     def _next(self):
@@ -102,7 +111,7 @@ class SerialProbe(object):
             self._next()
             return
 
-        self.deferred.errback(Exception("Probing failed"))
+        self.deferred.errback(SerialProbeException("Probing failed"))
 
 
 
