@@ -10,7 +10,6 @@ from mock import patch
 from StringIO import StringIO
 from serial.serialutil import SerialException
 
-from twisted.internet import defer
 from twisted.trial import unittest
 
 from zope.interface import implements
@@ -25,14 +24,14 @@ class FakeTransport(StringIO):
 
 class PingPongProtocol:
     implements(serialport.IProtocolProbe)
-            
+
     probeRequest = "PING"
     probeResponse = "PONG"
 
 
 class ComplexProtocol:
     implements(serialport.IProtocolProbe)
-            
+
     probeRequest = "BLEH"
     def probeResponse(self, data):
         return ord(data[0]) + ord(data[1]) == 31
