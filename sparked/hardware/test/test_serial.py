@@ -6,9 +6,11 @@ Tests for sparked.hardware.serial
 
 Maintainer: Arjan Scherpenisse
 """
-
+from mock import patch
 from StringIO import StringIO
+from serial.serialutil import SerialException
 
+from twisted.internet import defer
 from twisted.trial import unittest
 
 from zope.interface import implements
@@ -57,6 +59,36 @@ class TestSerialProbe(unittest.TestCase):
         self.assertRaises(serialport.SerialProbeException, probe.addCandidate, Bla, 19200) # does not implement IProtocolProbe
         self.assertRaises(serialport.SerialProbeException, probe.addCandidate, PingPongProtocol, 123) # invalid baud rate
         self.assertEquals(None, probe.addCandidate(PingPongProtocol, 19200)) # all ok
+
+
+    def testNonExisting(self):
+        probe = serialport.SerialProbe("/dev/fdsfdsfds")
+        probe.addCandidate(PingPongProtocol, 19200)
+        self.assertRaises(SerialException, probe.start)
+
+
+    @patch('serial.Serial')
+    def testSerial(self, Serial):
+
+        # create pipe
+        import os
+        r, w = os.pipe()
+
+        # patch the serial class to return the file descriptor to our pipe
+        inst = Serial.return_value
+        inst.fd = r
+
+        # write response in the pipe
+        os.write(w, "PONG")
+
+        # perform the test
+        probe = serialport.SerialProbe("/dev/some/serial/port")
+        probe.addCandidate(PingPongProtocol, 19200)
+        d = probe.start()
+
+        d.addCallback(lambda r: self.assertEquals(r, (PingPongProtocol, 19200)))
+        d.addCallback(lambda _: os.close(r))
+        return d
 
 
 

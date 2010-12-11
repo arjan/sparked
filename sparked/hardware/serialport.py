@@ -63,10 +63,11 @@ class SerialProbe(object):
     see if they match.
     """
 
-    def __init__(self, device):
+    def __init__(self, device, timeout=0.5):
         self.candidates = []
         self.device = device
-        
+        self.timeout = timeout
+
 
     def addCandidate(self, proto, baudrate=9600):
         if not IProtocolProbe.implementedBy(proto):
@@ -91,13 +92,8 @@ class SerialProbe(object):
         del self.candidates[0]
 
         log.msg("Trying %s @ %d baud" % (probe, baudrate))
-        proto = SerialProbeProtocol(probe)
-        try:
-            SerialPort(proto, self.device, reactor, baudrate=baudrate)
-        except:
-            # "port not open"
-            self._probeResult(False, probe, baudrate)
-            return
+        proto = SerialProbeProtocol(probe, timeout=self.timeout)
+        SerialPort(proto, self.device, reactor, baudrate=baudrate)
 
         proto.d.addCallback(self._probeResult, probe, baudrate)
 
@@ -121,12 +117,18 @@ class SerialProbeProtocol(protocol.Protocol):
     current connection.
     """
 
-    def __init__(self, probe, timeout=0.5, reactor=None):
+    timeout = 0.5
+    probe = None
+    reactor = None
+
+
+    def __init__(self, probe, timeout=None, reactor=None):
+        self.probe = probe
+        if timeout is not None:
+            self.timeout = timeout
         if not reactor:
             from twisted.internet import reactor
         self.reactor = reactor
-        self.probe = probe
-        self.timeout = timeout
         self.d = defer.Deferred()
 
 
