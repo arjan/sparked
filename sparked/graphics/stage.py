@@ -134,7 +134,7 @@ class Stage (clutter.Stage):
         """
         bus = dbus.SessionBus()
         iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
-        self.screensaverInhibited = iface.Inhibit(self.name, reason)
+        self.screensaverInhibited = iface.Inhibit(self.app.name, reason)
 
 
     def screensaverUnInhibit(self):
