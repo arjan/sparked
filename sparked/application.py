@@ -76,7 +76,8 @@ class Application(service.MultiService):
         prevHandler = signal.getsignal(signal.SIGUSR2)
         signal.signal(signal.SIGUSR2, lambda sig, frame: doReload(prevHandler))
 
-        reactor.callLater(0, self.loadOptions)
+        reactor.callLater(0, self.starting)
+        reactor.callLater(0, self.loadOptions, firstTime=True)
         reactor.callLater(0, self.state.set, "start")
         reactor.callLater(0, self.started)
 
@@ -91,10 +92,18 @@ class Application(service.MultiService):
         return getPath(kind, self.appName, dict(self.baseOpts))
 
 
+    def starting(self):
+        """
+        The application is starting. Add your event observers etc,
+        etc, here.
+        """
+
+
     def started(self):
         """
-        The application has just been started. Add your own services,
-        create the stage, the status windows, etc, etc, here.
+        The application has just been started and has entered the
+        'start' state. Add your own services, create the stage, the
+        status windows, etc, etc, here.
         """
 
 
@@ -116,13 +125,15 @@ class Application(service.MultiService):
         self.quitFlag.set()
 
 
-    def loadOptions(self):
+    def loadOptions(self, firstTime=False):
         """
         Load options from options.json. Automatically called on
         application load and on on USR2 signal.
         """
         cfgfile = self.path("db").child("options.json")
         if not cfgfile.exists():
+            if firstTime:
+                self.events.dispatch("options-loaded", self.appOpts)
             return
         cls = self.appOpts.__class__
         try:

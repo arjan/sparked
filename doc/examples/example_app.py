@@ -28,17 +28,19 @@ __version__ = "0.1.0"
 class Application(application.Application):
 
     title = "Spark example"
-    
-    def started(self):
-        if self.appOpts['fast']:
+
+    def starting(self):
+        self.events.addObserver("options-loaded", self.gotOptions)
+        self.events.addObserver("signal-usr2", self.gotUSR2)
+        zeroconfService.publishService("Test service", "_daap._tcp", 3333)
+
+
+    def gotOptions(self, opts):
+        if opts['fast']:
             self.delay = 1
         else:
             self.delay = 10
-        zeroconfService.publishService("Test service", "_daap._tcp", 3333)
 
-        self.events.addObserver("options-loaded", lambda d: log.msg("Options loaded! " + repr(d)))
-
-        self.events.addObserver("signal-usr2", self.gotUSR2)
 
 
     def enter_start(self):

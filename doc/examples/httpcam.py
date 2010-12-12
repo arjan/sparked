@@ -35,7 +35,7 @@ class Application(application.Application):
     def started(self):
         # Create webserver
         self.webserver = WebServer(self)
-        httpService = strports.service(self.appOpts["port"], Site(self.webserver))
+        httpService = strports.service("tcp:"+self.appOpts["port"], Site(self.webserver))
         httpService.setServiceParent(self)
 
         # Create webcam monitor
