@@ -191,7 +191,6 @@ def launchApplication(argv):
 
 
 def main():
-
     try:
         launchApplication(sys.argv[1:])
     except usage.UsageError, errortext:
