@@ -42,6 +42,7 @@ class AnymetaAPIMonitor (monitors.Monitor):
         if not opts[self.attribute]:
             if self.looper:
                 self.looper.stop()
+                self.looper = None
             setattr(self.app, self.attribute, None)
             self.ok = None
             self.api = None
@@ -52,6 +53,9 @@ class AnymetaAPIMonitor (monitors.Monitor):
             self.api = AnyMetaAPI.from_registry(opts[self.attribute], engine='twisted')
         except Exception:
             log.err()
+            if self.looper:
+                self.looper.stop()
+                self.looper = None
             self.ok = False
             self.container.update()
             return
@@ -60,6 +64,7 @@ class AnymetaAPIMonitor (monitors.Monitor):
         setattr(self.app, self.attribute, self.api)
         if self.looper:
             self.looper.stop()
+            self.looper = None
         self.looper = task.LoopingCall(self._check)
         self.looper.start(self.checkInterval)
 
