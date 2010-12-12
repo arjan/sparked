@@ -36,6 +36,7 @@ class AnymetaAPIMonitor (monitors.Monitor):
 
 
     def setAPI(self, opts):
+        self.title = 'anyMeta API'
         if self.attribute not in opts:
             raise ValueError("Missing '%s' key in application options" % self.attribute)
         if not opts[self.attribute]:
@@ -55,6 +56,7 @@ class AnymetaAPIMonitor (monitors.Monitor):
             self.container.update()
             return
 
+        self.title += " [%s]" % opts[self.attribute]
         setattr(self.app, self.attribute, self.api)
         if self.looper:
             self.looper.stop()
