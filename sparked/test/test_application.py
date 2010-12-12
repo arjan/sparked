@@ -85,7 +85,9 @@ class TestApplicationOptions(unittest.TestCase):
 
     def testSaveLoadComplex(self):
         class TestOptsComplex(Options):
+            verboseCalled = False
             def opt_verbose(self):
+                self.verboseCalled = True
                 self['verbose'] = True
 
         fn = tempfile.mkstemp()[1]
@@ -96,12 +98,13 @@ class TestApplicationOptions(unittest.TestCase):
         optb = TestOptsComplex.load(fn)
         self.assertEquals(opta['verbose'], True)
         self.assertEquals(opta['verbose'], optb['verbose'])
+        self.assertEquals(optb.verboseCalled, True)
 
         opta['verbose'] = False
         opta.save(fn)
         optb = TestOptsComplex.load(fn)
         self.assertEquals(optb['verbose'], False)
-
+        self.assertEquals(optb.verboseCalled, False)
 
 
     def testSaveLoadCallback(self):
