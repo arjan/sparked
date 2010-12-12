@@ -1,5 +1,6 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
+# -*- test-case-name:  sparked.test.test_launcher -*-
 
 """
 The Sparked application launcher.
@@ -95,40 +96,29 @@ def splitOptions(args):
 
 def run(appName):
     application = service.Application(appName)
-    
+
     from sparked import tap
     config = tap.Options()
     config.parseOptions(sys.argv[1:])
     svc = tap.makeService(config)
     svc.setServiceParent(application)
-        
+
     app.startApplication(application, False)
     log.addObserver(log.FileLogObserver(sys.stdout).emit)
 
     reactor.run()
 
 
-def launch(baseOptions, env):
-    argv = []
-    argv.append("twistd")
-    argv.append("--pidfile")
-    argv.append(baseOptions['pidfile'])
-    argv.append('-r')
-    argv.append('gtk2')
-    argv.append('-n')
-    argv.append('sparked')
-    argv = argv + sys.argv[1:]
-
-    return subprocess.call(argv, env=env)
-
-
-def launchLoop(app, options, env, tempPath):
+def runInSubprocess(app, options, env, tempPath):
     quitFlag = QuitFlag(tempPath.child("quitflag"))
     quitFlag.reset()
     respawned = False
     while True:
         start = time.time()
-        launch(options, env)
+
+        argv = ["twistd", "--pidfile", options['pidfile'], '-r', 'gtk2', '-n', 'sparked'] + sys.argv[1:]
+        subprocess.call(argv, env=env)
+
         if time.time() - start < 5:
             if respawned:
                 sys.stderr.write("*** %s: respawning too fast ***\n" % app)
@@ -171,37 +161,39 @@ def launchHelp(app):
     exit(1)
 
 
+
+def launchApplication(argv):
+    options = Options()
+    sparkedOpts, appName, appOpts = splitOptions(argv)
+    options.parseOptions(sparkedOpts)
+
+    if not appName:
+        raise usage.UsageError("Missing application name")
+
+    appModule, appName = loadModule(appName)
+
+    if hasattr(appModule, 'Options'):
+        opts = appModule.Options()
+    else:
+        opts = application.Options()
+
+    opts.appName = appName
+    if not hasattr(opts, 'longdesc'):
+        opts.longdesc = appModule.__doc__
+    opts.parseOptions(appOpts)
+
+    if options['no-subprocess']:
+        return run(appName)
+
+    options['pidfile'] = application.getPath('pidfile', appName, opts).path
+    tempPath = application.getPath("temp", appName, opts)
+    return runInSubprocess(appName, options, os.environ, tempPath)
+
+
 def main():
 
-    env = os.environ
-
     try:
-        options = Options()
-        sparkedOpts, appName, appOpts = splitOptions(sys.argv[1:])
-        options.parseOptions(sparkedOpts)
-
-        if not appName:
-            options.opt_help()
-
-        appModule, appName = loadModule(appName)
-
-        if hasattr(appModule, 'Options'):
-            opts = appModule.Options()
-        else:
-            opts = application.Options()
-
-        opts.appName = appName
-        if not hasattr(opts, 'longdesc'):
-            opts.longdesc = appModule.__doc__
-        opts.parseOptions(appOpts)
-
-        if options['no-subprocess']:
-            run(appName)
-        else:
-            options['pidfile'] = application.getPath('pidfile', appName, opts).path
-            tempPath = application.getPath("temp", appName, opts)
-            launchLoop(appName, options, env, tempPath)
-
+        launchApplication(sys.argv[1:])
     except usage.UsageError, errortext:
         print 'sparkd: %s' % errortext
         print

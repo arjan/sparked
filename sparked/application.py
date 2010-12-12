@@ -1,6 +1,6 @@
 # Copyright (c) 2010 Arjan Scherpenisse
 # See LICENSE for details.
-# -*- test-case-name:  xsparked.test.test_application -*-
+# -*- test-case-name:  sparked.test.test_application -*-
 
 """
 The base application class.
