@@ -204,6 +204,7 @@ def main():
 
     except usage.UsageError, errortext:
         print 'sparkd: %s' % errortext
+        print
         print 'Try sparkd --help for usage details.'
         print
         sys.exit(1)
