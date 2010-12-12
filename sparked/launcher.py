@@ -151,7 +151,8 @@ def loadModule(app):
         path = os.path.dirname(app)
         if not path: path = "."
         sys.path.insert(0, path)
-        app = os.path.basename(app)[:-3]
+        from twisted.python import reflect
+        app = reflect.filenameToModuleName(app)
 
     try:
         mod = __import__(app, None, None, app.split(".")[-1])

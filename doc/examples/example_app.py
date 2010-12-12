@@ -14,6 +14,8 @@ Try sparkd example_app.py --help to view the generated usage options
 for this app.
 """
 
+from twisted.python import log
+
 from sparked import application, monitors
 from sparked.internet.zeroconf import zeroconfService
 
@@ -34,6 +36,10 @@ class Application(application.Application):
             self.delay = 10
         zeroconfService.publishService("Test service", "_daap._tcp", 3333)
 
+        self.events.addObserver("options-loaded", lambda d: log.msg("Options loaded! " + repr(d)))
+
+        self.events.addObserver("signal-usr2", self.gotUSR2)
+
 
     def enter_start(self):
         self.state.setAfter("ping", self.delay)
@@ -49,5 +55,5 @@ class Application(application.Application):
         return m
 
 
-    def reloadService(self):
-        print "I got the USR1 signal! I should do something to reload myself."
+    def gotUSR2(self):
+        print "I got the USR2 signal!"

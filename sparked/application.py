@@ -7,15 +7,19 @@ The base application class.
 """
 
 import signal
-import dbus
 import time
-import tempfile
+import inspect
+
+try:
+    import json
+except ImportError:
+    import simplejson as json
 
 from twisted.application import service
 from twisted.python import log, usage, filepath
 from twisted.internet import reactor
 
-from sparked import monitors, __version__
+from sparked import monitors, events, __version__
 
 
 class Application(service.MultiService):
@@ -60,16 +64,19 @@ class Application(service.MultiService):
         self.appId = baseOpts['id'] or appName
 
         self.state = StateMachine(self)
+        self.events = events.EventDispatcher()
 
         self.createMonitors()
 
         def doReload(prev):
             if callable(prev):
                 prev()
-            self.reloadService()
+            self.loadOptions()
+            self.events.dispatch("signal-usr2")
         prevHandler = signal.getsignal(signal.SIGUSR2)
         signal.signal(signal.SIGUSR2, lambda sig, frame: doReload(prevHandler))
 
+        reactor.callLater(0, self.loadOptions)
         reactor.callLater(0, self.state.set, "start")
         reactor.callLater(0, self.started)
 
@@ -109,36 +116,32 @@ class Application(service.MultiService):
         self.quitFlag.set()
 
 
-
-    screensaverInhibited = None
-    """ Flag which is non-zero when the screensaver has been inhibited. """
-
-
-    def screensaverInhibit(self, reason):
+    def loadOptions(self):
         """
-        Prevent the screen saver from starting.
+        Load options from options.json. Automatically called on
+        application load and on on USR2 signal.
         """
-        bus = dbus.SessionBus()
-        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
-        self.screensaverInhibited = iface.Inhibit(self.name, reason)
-
-
-    def screensaverUnInhibit(self):
-        """
-        Resume the screen saver.
-        """
-        if not self.screensaverInhibited:
+        cfgfile = self.path("db").child("options.json")
+        if not cfgfile.exists():
             return
-        bus = dbus.SessionBus()
-        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
-        iface.UnInhibit(self.screensaverInhibited)
-        self.screensaverInhibited = None
+        cls = self.appOpts.__class__
+        try:
+            newOpts = cls.load(cfgfile.path)
+        except ValueError, e:
+            print "** Syntax error in options.json **"
+            log.err(e)
+            return
+
+        self.appOpts.update(newOpts)
+        self.events.dispatch("options-loaded", self.appOpts)
 
 
-    def reloadService(self):
+    def saveOptions(self):
         """
-        Overrule this function to respond to the USR2 signal.
+        Save options from settings.json. Never called automatically.
         """
+        self.appOpts.save(self.path("db").child("options.json").path)
+        self.events.dispatch("options-saved", self.appOpts)
 
 
 class Options (usage.Options):
@@ -178,6 +181,34 @@ class Options (usage.Options):
             print "%s %s(sparked %s)" % (self.appName, v, __version__)
         exit(0)
 
+
+    def save(self, fn):
+        fp = open(fn, "w")
+        fp.write(json.dumps(dict(self)))
+        fp.close()
+
+
+    def load(cls, fn):
+        inst = cls()
+        values = json.loads(open(fn, "r").read())
+        inst.opts = values
+        inst.update(values)
+        for k,v in values.iteritems():
+            if hasattr(inst, 'optParameters') and k in [l[0] for l in inst.optParameters if len(l)==5]:
+                # check arg type
+                tpe = [l for l in inst.optParameters if len(l)==5][0][4]
+                if type(v) != tpe:
+                    raise ValueError("Expected type '%s' for parameter '%s'" % (tpe, k))
+            elif hasattr(inst, 'opt_%s' % k):
+                f = getattr(inst, 'opt_%s' % k)
+                if len(inspect.getargspec(f)[0]) == 1:
+                    if v: f()
+                else:
+                    f(v)
+
+        inst.postOptions()
+        return inst
+    load = classmethod(load)
 
 
 

@@ -8,9 +8,9 @@ displays.
 
 F11 toggles fullscreen.
 """
-
 import gtk
 import clutter
+import dbus
 
 from twisted.internet import reactor
 
@@ -119,9 +119,35 @@ class Stage (clutter.Stage):
             if not self.debug:
                 self.hide_cursor()
 
-            self.app.screensaverInhibit("Fullscreen presentation")
+            self.screensaverInhibit("Fullscreen presentation")
         else:
-            self.app.screensaverUnInhibit()
+            self.screensaverUnInhibit()
+
+
+    screensaverInhibited = None
+    """ Flag which is non-zero when the screensaver has been inhibited. """
+
+
+    def screensaverInhibit(self, reason):
+        """
+        Prevent the screen saver from starting.
+        """
+        bus = dbus.SessionBus()
+        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
+        self.screensaverInhibited = iface.Inhibit(self.name, reason)
+
+
+    def screensaverUnInhibit(self):
+        """
+        Resume the screen saver.
+        """
+        if not self.screensaverInhibited:
+            return
+        bus = dbus.SessionBus()
+        iface = dbus.Interface(bus.get_object('org.gnome.ScreenSaver', "/org/gnome/ScreenSaver"), 'org.gnome.ScreenSaver')
+        iface.UnInhibit(self.screensaverInhibited)
+        self.screensaverInhibited = None
+
 
 
 def positionInBox(actor, box):

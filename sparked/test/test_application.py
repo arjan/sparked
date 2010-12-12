@@ -6,10 +6,11 @@ Tests for sparked.application.*
 
 Maintainer: Arjan Scherpenisse
 """
+import tempfile
 
 from twisted.trial import unittest
 
-from sparked.application import getPath
+from sparked.application import getPath, Options
 
 class TestGetPath(unittest.TestCase):
     """
@@ -63,4 +64,68 @@ class TestGetPath(unittest.TestCase):
         self.assertEqual("/var/aap", getPath("db", "foo", {'db-path': '/var/aap/', 'system-paths': True}).path)
         self.assertEqual("/var/lib/foo", getPath("db", "foo", {'system-paths': True}).path)
         self.assertEqual("/var/lib/bar", getPath("db", "foo", {'system-paths': True, 'id': 'bar'}).path)
+
+
+
+class TestApplicationOptions(unittest.TestCase):
+
+    def testSaveLoad(self):
+        class TestOpts(Options):
+            optFlags = [["fast", "f", "Run fast"]]
+            optParameters = [["user", "u", None, "The user name"]]
+        fn = tempfile.mkstemp()[1]
+        opta = TestOpts()
+        opta.parseOptions(["-f", "-u", "arjan"])
+        opta.save(fn)
+
+        optb = TestOpts.load(fn)
+        self.assertEquals(opta['fast'], optb['fast'])
+        self.assertEquals(opta['user'], optb['user'])
+
+
+    def testSaveLoadComplex(self):
+        class TestOptsComplex(Options):
+            def opt_verbose(self):
+                self['verbose'] = True
+
+        fn = tempfile.mkstemp()[1]
+        opta = TestOptsComplex()
+        opta.parseOptions(["--verbose"])
+        opta.save(fn)
+
+        optb = TestOptsComplex.load(fn)
+        self.assertEquals(opta['verbose'], True)
+        self.assertEquals(opta['verbose'], optb['verbose'])
+
+        opta['verbose'] = False
+        opta.save(fn)
+        optb = TestOptsComplex.load(fn)
+        self.assertEquals(optb['verbose'], False)
+
+
+
+    def testSaveLoadCallback(self):
+        class TestOptsComplex2(Options):
+            def opt_foo(self, arg):
+                if arg != "bar":
+                    raise ValueError("foo must be bar")
+                self['foo'] = arg
+        fn = tempfile.mkstemp()[1]
+        opta = TestOptsComplex2()
+        opta.parseOptions(["--foo=bar"])
+        opta['foo'] = 'baz'
+        opta.save(fn)
+        self.assertRaises(ValueError, TestOptsComplex2.load, fn)
+
+
+    def testSaveLoadTypeEnforcement(self):
+
+        class TestOptsComplex3(Options):
+            optParameters = [["count", "c", None, "The count", int]]
+        fn = tempfile.mkstemp()[1]
+        opta = TestOptsComplex3()
+        opta.parseOptions(["--count=11"])
+        opta['count'] = 'not_a_number'
+        opta.save(fn)
+        self.assertRaises(ValueError, TestOptsComplex3.load, fn)
 
