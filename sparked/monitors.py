@@ -28,6 +28,8 @@ class MonitorContainer (service.MultiService):
     events = None
     verbose = False
 
+    lastState = None
+
     def __init__(self):
         service.MultiService.__init__(self)
         self.events = events.EventDispatcher()
@@ -62,22 +64,31 @@ class MonitorContainer (service.MultiService):
         """
         Notify the container that monitor state has been changed or the monitors have been modified.
         """
+        if self.state() == self.lastState:
+            return
         self.events.dispatch("updated", self)
         if self.verbose:
             log.msg("= STATUS =====================")
             for m in self.monitors:
-                if m.ok:
+                if m.ok is None:
+                    stat = "n/a"
+                elif m.ok:
                     stat = "ok"
                 else:
                     stat = "FAIL"
                 log.msg("%-26s%4s" % (m.title, stat))
             log.msg("==============================")
-
+        self.lastState = self.state()
 
     def ok(self):
         for m in self.monitors:
-            if not m.ok: return False
+            if m.ok == False: return False
         return True
+
+
+    def state(self):
+        return tuple([m.ok for m in self.monitors])
+
 
 
 class Monitor(object):
@@ -87,7 +98,7 @@ class Monitor(object):
     @ivar ok:  Boolean flag which tells if the monitor's state is 'ok' or not.
     """
 
-    ok = False
+    ok = None
 
     def added(self, container):
         """
