@@ -17,7 +17,6 @@ except ImportError:
 
 from twisted.application import service
 from twisted.python import log, usage, filepath
-from twisted.internet import reactor
 
 from sparked import monitors, events, __version__
 
@@ -55,15 +54,19 @@ class Application(service.MultiService):
     appId = None
 
 
-    def __init__(self, appName, baseOpts, appOpts):
+    def __init__(self, appName, baseOpts, appOpts, reactor=None):
         service.MultiService.__init__(self)
 
         self.appName = appName
         self.baseOpts = baseOpts
         self.appOpts = appOpts
-        self.appId = baseOpts['id'] or appName
+        self.appId = baseOpts.get('id', appName)
 
-        self.state = StateMachine(self)
+        if reactor is None:
+            from twisted.internet import reactor
+        self.reactor = reactor
+
+        self.state = StateMachine(self, reactor)
         self.events = events.EventDispatcher()
 
         self.createMonitors()
@@ -76,10 +79,16 @@ class Application(service.MultiService):
         prevHandler = signal.getsignal(signal.SIGUSR2)
         signal.signal(signal.SIGUSR2, lambda sig, frame: doReload(prevHandler))
 
-        reactor.callLater(0, self.starting)
-        reactor.callLater(0, self.loadOptions, firstTime=True)
-        reactor.callLater(0, self.state.set, "start")
-        reactor.callLater(0, self.started)
+        def trap(f):
+            try:
+                f()
+            except:
+                log.err()
+                self.reactor.stop()
+        self.reactor.callLater(0, trap, self.starting)
+        self.reactor.callLater(0, self.loadOptions, firstTime=True)
+        self.reactor.callLater(0, self.state.set, "start")
+        self.reactor.callLater(0, trap, self.started)
 
 
     def path(self, kind):
@@ -116,7 +125,7 @@ class Application(service.MultiService):
         # Make sure the monitors talk to us in the log.
         m.verbose = True
 
-        reactor.callLater(0, m.setServiceParent, self)
+        self.reactor.callLater(0, m.setServiceParent, self)
         self.monitors = m
         return m
 
@@ -285,9 +294,12 @@ class StateMachine (object):
     nextStateAfter = None
 
 
-    def __init__(self, parent):
+    def __init__(self, parent, reactor=None):
         self._listeners = []
         self.addListener(parent)
+        if reactor is None:
+            from twisted.internet import reactor
+        self.reactor = reactor
 
 
     def set(self, newstate):
@@ -302,7 +314,7 @@ class StateMachine (object):
         self.nextStateAfter = None
 
         if self._state:
-            self._call("exit_%s" % self._state)
+            self._call("exit_%s" % self._state, True)  # call reversed
 
         log.msg("%s --> %s" % (self._state, newstate))
         self._state = newstate
@@ -317,7 +329,7 @@ class StateMachine (object):
         self._afterStart = time.time()
         self._afterStop = self._afterStart + after
         self.nextStateAfter = after
-        self._statechanger = reactor.callLater(after, self.set, newstate)
+        self._statechanger = self.reactor.callLater(after, self.set, newstate)
 
 
     def bumpAfter(self, after=None):
@@ -340,10 +352,13 @@ class StateMachine (object):
         return self._state
 
 
-    def _call(self, cb, *arg):
-        for l in self._listeners:
+    def _call(self, cb, reverse=False):
+        listeners = self._listeners
+        if reverse:
+            listeners = listeners[::-1]
+        for l in listeners:
             try:
-                getattr(l, cb)(*arg)
+                getattr(l, cb)()
             except AttributeError:
                 pass
 

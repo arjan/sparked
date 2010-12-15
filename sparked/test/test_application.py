@@ -9,8 +9,12 @@ Maintainer: Arjan Scherpenisse
 import tempfile
 
 from twisted.trial import unittest
+from twisted.internet import task
 
-from sparked.application import getPath, Options
+from sparked.events import EventDispatcher
+from sparked.monitors import MonitorContainer
+from sparked.application import getPath, Options, Application, StateMachine
+
 
 class TestGetPath(unittest.TestCase):
     """
@@ -131,4 +135,172 @@ class TestApplicationOptions(unittest.TestCase):
         opta['count'] = 'not_a_number'
         opta.save(fn)
         self.assertRaises(ValueError, TestOptsComplex3.load, fn)
+
+
+
+class TestApplication(unittest.TestCase):
+    """
+    Test the L{sparked.application.Application} class.
+    """
+
+    def testConstructor(self):
+        """
+        Test if all assignments in the application constructor are set.
+        """
+        app = Application("foo", {}, {})
+        self.assertEquals("foo", app.appId)
+        self.assertEquals({}, app.appOpts)
+        self.assertEquals({}, app.baseOpts)
+
+        self.assertIsInstance(app.state, StateMachine)
+        self.assertIsInstance(app.events, EventDispatcher)
+        self.assertIsInstance(app.monitors, MonitorContainer)
+
+
+    def testConstructorStartupOrder(self):
+        seq = []
+        class TestApp(Application):
+            def starting(app):
+                seq.append("starting")
+                self.assertEquals(None, app.state.get)
+
+            def started(app):
+                seq.append("started")
+                self.assertEquals("start", app.state.get)
+
+        clock = task.Clock()
+
+        TestApp("foo", {}, {}, reactor=clock)
+        clock.advance(0.1)
+
+        self.assertEquals(seq, ["starting", "started"])
+
+
+    def testConstructorStartupCrash(self):
+        """ The L{application.started} call may crash """
+        self.stopped = False
+
+        class TestApp(Application):
+            def starting(app):
+                raise ValueError("Whoooops")
+
+        class StoppableClock(task.Clock):
+            def stop(s):
+                self.stopped = True
+        clock = StoppableClock()
+
+        TestApp("foo", {}, {}, reactor=clock)
+        clock.advance(0.5)
+        self.assertEquals(1, len(self.flushLoggedErrors(ValueError)))
+        self.assertTrue(self.stopped, "Reactor need to be stopped on startup error")
+
+
+    def testConstructorStartupCrash2(self):
+        """ The L{application.started} call may crash as well """
+        self.stopped = False
+
+        class TestApp(Application):
+            def started(app):
+                raise ValueError("Whoooops")
+
+        class StoppableClock(task.Clock):
+            def stop(s):
+                self.stopped = True
+        clock = StoppableClock()
+
+        TestApp("foo", {}, {}, reactor=clock)
+        clock.advance(0.5)
+        self.assertEquals(1, len(self.flushLoggedErrors(ValueError)))
+        self.assertTrue(self.stopped, "Reactor need to be stopped on startup error")
+
+
+
+class TestStateMachine(unittest.TestCase):
+
+    def testConstruct(self):
+        m = StateMachine(None)
+        self.assertEquals(None, m.get)
+
+
+    def testGetSet(self):
+        m = StateMachine(None)
+        m.set("foo")
+        self.assertEquals("foo", m.get)
+
+
+    def testSetAfter(self):
+        clock = task.Clock()
+        m = StateMachine(None, reactor=clock)
+        m.setAfter("foo", 1.0)
+        self.assertEquals(None, m.get)
+        clock.advance(1.0)
+        self.assertEquals("foo", m.get)
+
+
+    def testBumpAfter(self):
+        clock = task.Clock()
+        m = StateMachine(None, reactor=clock)
+        m.setAfter("foo", 1.0)
+        self.assertEquals(None, m.get)
+        clock.advance(0.5)
+        m.bumpAfter()
+        clock.advance(0.5)
+        self.assertEquals(None, m.get)
+        clock.advance(0.5)
+        self.assertEquals("foo", m.get)
+
+
+    def testBumpAfter2(self):
+        clock = task.Clock()
+        m = StateMachine(None, reactor=clock)
+        m.setAfter("foo", 1.0)
+        self.assertEquals(None, m.get)
+        clock.advance(0.5)
+        m.bumpAfter()
+        clock.advance(0.5)
+        self.assertEquals(None, m.get)
+        m.bumpAfter()
+        clock.advance(0.5)
+        self.assertEquals(None, m.get)
+        clock.advance(0.5)
+        self.assertEquals("foo", m.get)
+
+
+    def testCallbacks(self):
+        self.called = []
+        class Listener:
+            def enter_a(s): self.called.append("enter_a")
+            def exit_a(s): self.called.append("exit_a")
+            def enter_b(s): self.called.append("enter_b")
+            def exit_b(s): self.called.append("exit_b")
+        m = StateMachine(Listener())
+        m.set("a")
+        self.assertEquals(self.called, ["enter_a"])
+
+        m.set("a")
+        self.assertEquals(self.called, ["enter_a", "exit_a", "enter_a"])
+
+        m.set("b")
+        self.assertEquals(self.called, ["enter_a", "exit_a", "enter_a", "exit_a", "enter_b"])
+
+        m.set("a")
+        self.assertEquals(self.called, ["enter_a", "exit_a", "enter_a", "exit_a", "enter_b", "exit_b", "enter_a"])
+
+
+    def testExtraListener(self):
+        self.called = []
+        class Listener:
+            post=""
+            def enter_a(s): self.called.append("enter_a"+s.post)
+            def exit_a(s): self.called.append("exit_a"+s.post)
+            def enter_b(s): self.called.append("enter_b"+s.post)
+            def exit_b(s): self.called.append("exit_b"+s.post)
+        m = StateMachine(Listener())
+        l2 = Listener()
+        l2.post = "2"
+        m.addListener(l2)
+        m.set("a")
+        self.assertEquals(self.called, ["enter_a", "enter_a2"])
+        m.set("b")
+        self.assertEquals(self.called, ["enter_a", "enter_a2", "exit_a2", "exit_a", "enter_b", "enter_b2"])
 
