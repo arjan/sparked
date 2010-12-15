@@ -21,6 +21,10 @@ class TestGetPath(unittest.TestCase):
     Test the L{application.getPath}
     """
 
+    def testInvalidPath(self):
+        self.assertRaises(ValueError, getPath, "someinvalidpath", "", {})
+
+
     def testTempPath(self):
         self.assertEqual("/tmp/foo", getPath("temp", "foo", {}).path)
         self.assertEqual("/tmp/bar", getPath("temp", "foo", {'id': 'bar'}).path)
@@ -235,6 +239,17 @@ class TestStateMachine(unittest.TestCase):
         self.assertEquals(None, m.get)
         clock.advance(1.0)
         self.assertEquals("foo", m.get)
+
+
+    def testSetAfterCancelled(self):
+        clock = task.Clock()
+        m = StateMachine(None, reactor=clock)
+        m.setAfter("foo", 1.0)
+        self.assertEquals(None, m.get)
+        clock.advance(0.5)
+        m.set("bar")
+        clock.advance(0.5)
+        self.assertEquals("bar", m.get)
 
 
     def testBumpAfter(self):
