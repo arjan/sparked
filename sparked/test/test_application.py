@@ -7,6 +7,7 @@ Tests for sparked.application.*
 Maintainer: Arjan Scherpenisse
 """
 import tempfile
+import os
 
 from twisted.trial import unittest
 from twisted.internet import task
@@ -53,7 +54,6 @@ class TestGetPath(unittest.TestCase):
 
 
     def testDataPath(self):
-        import os
         c = os.getcwd()
         self.assertEqual(c+"/data", getPath("data", "foo", {}).path)
         self.assertEqual(c+"/data", getPath("data", "foo", {'id': 'bar'}).path)
@@ -72,6 +72,11 @@ class TestGetPath(unittest.TestCase):
         self.assertEqual("/var/aap", getPath("db", "foo", {'db-path': '/var/aap/', 'system-paths': True}).path)
         self.assertEqual("/var/lib/foo", getPath("db", "foo", {'system-paths': True}).path)
         self.assertEqual("/var/lib/bar", getPath("db", "foo", {'system-paths': True, 'id': 'bar'}).path)
+
+
+    def testPathExpansion(self):
+        self.assertEqual(os.getenv("HOME"), getPath("data", "foo", {"data-path": "~"}).path)
+        self.assertEqual(os.getenv("HOME")+"/tmp", getPath("data", "foo", {"data-path": "~/tmp"}).path)
 
 
 

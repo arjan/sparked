@@ -45,8 +45,12 @@ class NetworkWebConnectionService(service.Service):
     Checks if the network connection is up by trying to reach a website.
     """
 
-    url = "http://www.google.com/"
+    url = None
     delay = 30
+
+    def __init__(self, url):
+        self.url = url
+
 
     def startService(self):
         self.connected = False

@@ -6,6 +6,7 @@
 The base application class.
 """
 
+import os
 import signal
 import time
 import inspect
@@ -241,32 +242,32 @@ def getPath(kind, appName, options):
     """
     base = options.get("id") or appName
     if kind == "temp":
-        return filepath.FilePath(options.get("temp-path") or "/tmp/" + base)
+        return filepath.FilePath(os.path.expanduser(options.get("temp-path") or "/tmp/" + base))
 
     if kind == "logfile":
         if options.get("logfile"):
-            return filepath.FilePath(options.get("logfile"))
+            return filepath.FilePath(os.path.expanduser(options.get("logfile")))
         if options.get("system-paths"):
             return filepath.FilePath("/var/log").child(base+".log")
         return getPath("temp", appName, options).child("sparkd.log")
 
     if kind == "pidfile":
         if options.get("pidfile"):
-            return filepath.FilePath(options.get("pidfile"))
+            return filepath.FilePath(os.path.expanduser(options.get("pidfile")))
         if options.get("system-paths"):
             return filepath.FilePath("/var/run").child(base+".pid")
         return getPath("temp", appName, options).child("sparkd.pid")
 
     if kind == "data":
         if options.get("data-path"):
-            return filepath.FilePath(options.get("data-path"))
+            return filepath.FilePath(os.path.expanduser(options.get("data-path")))
         if options.get("system-paths"):
             return filepath.FilePath("/usr/share").child(appName)
         return filepath.FilePath("data/")
 
     if kind == "db":
         if options.get("db-path"):
-            return filepath.FilePath(options.get("db-path"))
+            return filepath.FilePath(os.path.expanduser(options.get("db-path")))
         if options.get("system-paths"):
             return filepath.FilePath("/var/lib").child(base)
         return getPath("temp", appName, options).child("db")

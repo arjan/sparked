@@ -160,10 +160,15 @@ class NetworkMonitor(Monitor):
 
 class NetworkWebMonitor(Monitor):
     title = "Internet connection"
+    url = None
+
+    def __init__(self, url="http://www.google.com/"):
+        self.url = url
+
 
     def added(self, container):
         self.container = container
-        self.svc = network.NetworkWebConnectionService()
+        self.svc = network.NetworkWebConnectionService(self.url)
         self.svc.setServiceParent(container)
         network.networkEvents.addObserver("web-connected", self.event)
 

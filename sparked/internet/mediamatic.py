@@ -88,3 +88,10 @@ class AnymetaAPIMonitor (monitors.Monitor):
     def added(self, container):
         self.container = container
 
+
+class MediamaticWebMonitor(monitors.NetworkWebMonitor):
+    title = "hwdeps.mediamatic.nl"
+
+    def __init__(self):
+        from socket import gethostname
+        monitors.NetworkWebMonitor.__init__(self, "http://hwdeps.mediamatic.nl/ping.php?host="+gethostname())
