@@ -2,3 +2,4 @@ include doc/sparkd.1
 include share/sparked-init
 include LICENSE
 recursive-include doc/examples *.py
+recursive-include doc/api *.html

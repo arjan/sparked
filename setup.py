@@ -14,7 +14,11 @@ import sparked
 from twisted.python import procutils
 
 
-if sys.argv[1] == "build":
+if "doc" in sys.argv:
+    os.system("mkdir -p doc/api && epydoc --html -o doc/api/ sparked")
+    del sys.argv[sys.argv.index("doc")]
+
+if "build" in sys.argv:
     commands = [
         'PYTHONPATH=. help2man --no-info --include=doc/man-sparkd.txt --name="The Sparked application launcher" ./bin/sparkd --output=doc/sparkd.1',
         ]

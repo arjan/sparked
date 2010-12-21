@@ -2,11 +2,12 @@
 # See LICENSE for details.
 
 """
-Spark
-=====
+Sparked
+=======
 
-  Spark is an Application Development Framework for creating reliable
-  interactive installations. It has the following features:
+  Sparked is an Application Development Framework for creating robust,
+  complex and modular interactive installations with little effort. It
+  has the following properties:
 
    - B{reliability} - based on the
      U{Twisted<http://www.twistedmatrix.com/>} framework, it runs
@@ -27,4 +28,4 @@ Spark
 
 """
 
-__version__ = "0.9.4"
+__version__ = "0.9.5"
