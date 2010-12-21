@@ -16,6 +16,12 @@ class FooMonitor(monitors.Monitor):
     pass
 
 
+class StatefulMonitor(monitors.Monitor):
+    def __init__(self, ok):
+        self.ok = ok
+
+
+
 class TestMonitorContainer(unittest.TestCase):
     """
     Test the L{sparked.monitors.MonitorContainer}
@@ -36,6 +42,29 @@ class TestMonitorContainer(unittest.TestCase):
         c.removeMonitor(m)
         self.assertEquals(m.container, None)
         self.assertEquals(c.monitors, [])
+
+
+
+    def testContainerState(self):
+        c = monitors.MonitorContainer()
+
+        self.assertEquals(True, c.ok)
+        self.assertEquals((), c.state)
+
+        c.addMonitor(StatefulMonitor(True))
+        self.assertEquals(True, c.ok)
+        self.assertEquals((True,), c.state)
+
+        c.addMonitor(StatefulMonitor(False))
+        self.assertEquals(False, c.ok)
+        self.assertEquals((True, False), c.state)
+
+
+    def testContainerStateNone(self):
+        c = monitors.MonitorContainer()
+        c.addMonitor(StatefulMonitor(None))
+        self.assertEquals(True, c.ok)
+        self.assertEquals((None,), c.state)
 
 
     def testSignals(self):
