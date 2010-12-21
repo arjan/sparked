@@ -72,7 +72,7 @@ class Stage (clutter.Stage):
 
 
     def updateMonitors(self, container):
-        if container.ok():
+        if container.ok:
             self._monitorText.hide()
             return
         txt = "ERROR: "

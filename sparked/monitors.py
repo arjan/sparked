@@ -26,7 +26,7 @@ class MonitorContainer (service.MultiService):
 
     monitors = None
     events = None
-    verbose = False
+    verbose = True
 
     lastState = None
 
@@ -43,49 +43,55 @@ class MonitorContainer (service.MultiService):
 
     def addMonitor(self, monitor):
         """
-        Add a monitor to the container, and notify that the monitor has changed.
+        Add a monitor to the container, and notify that the monitor
+        has changed. A monitor can only be part of one container.
         """
+        if monitor.container is not None:
+            monitor.container.removeMonitor(monitor)
+        monitor.container = self
         self.monitors.append(monitor)
-        monitor.added(self)
+        monitor.added()
         self.update()
 
 
     def removeMonitor(self, monitor):
         """
-        Remove a monitor from the container
+        Remove a monitor from the container. Raises ValueError if the
+        monitor is not part of the container.
         """
         i = self.monitors.index(monitor)
         self.monitors[i].removed(self)
+        self.monitors[i].container = None
         del self.monitors[i]
         self.update()
 
 
     def update(self):
         """
-        Notify the container that monitor state has been changed or the monitors have been modified.
+        Notify the container that monitor state has been changed or
+        the monitors have been modified.
         """
-        if self.state() == self.lastState:
+        if self.state == self.lastState:
             return
         self.events.dispatch("updated", self)
-        if self.verbose:
+        self.lastState = self.state
+        if not self.verbose:
+            return
             log.msg("= STATUS =====================")
             for m in self.monitors:
-                if m.ok is None:
-                    stat = "n/a"
-                elif m.ok:
-                    stat = "ok"
-                else:
-                    stat = "FAIL"
+                stat = {None: "n/a", True: "ok", False: "FAIL"}[m.ok]
                 log.msg("%-26s%4s" % (m.title, stat))
             log.msg("==============================")
-        self.lastState = self.state()
 
+
+    @property
     def ok(self):
         for m in self.monitors:
             if m.ok == False: return False
         return True
 
 
+    @property
     def state(self):
         return tuple([m.ok for m in self.monitors])
 
@@ -99,10 +105,11 @@ class Monitor(object):
     """
 
     ok = None
+    container = None
 
-    def added(self, container):
+    def added(self):
         """
-        Called when monitor is added to container. The container can
+        Called when monitor is added to a container. The container can
         be used to hook services to.
         """
         pass
@@ -119,10 +126,9 @@ class Monitor(object):
 class PowerMonitor (Monitor):
     title = "Computer power"
 
-    def added(self, container):
-        self.container = container
+    def added(self):
         self.svc = power.PowerService()
-        self.svc.setServiceParent(container)
+        self.svc.setServiceParent(self.container)
         power.powerEvents.addObserver("available", self.powerEvent)
 
 
@@ -140,10 +146,9 @@ class PowerMonitor (Monitor):
 class NetworkMonitor(Monitor):
     title = "Network connection"
 
-    def added(self, container):
-        self.container = container
+    def added(self):
         self.svc = network.NetworkConnectionService()
-        self.svc.setServiceParent(container)
+        self.svc.setServiceParent(self.container)
         network.networkEvents.addObserver("connected", self.event)
 
 
@@ -166,10 +171,9 @@ class NetworkWebMonitor(Monitor):
         self.url = url
 
 
-    def added(self, container):
-        self.container = container
+    def added(self):
         self.svc = network.NetworkWebConnectionService(self.url)
-        self.svc.setServiceParent(container)
+        self.svc.setServiceParent(self.container)
         network.networkEvents.addObserver("web-connected", self.event)
 
 
@@ -199,8 +203,7 @@ class NamedZeroconfMonitor(Monitor):
         self.type = type
 
 
-    def added(self, container):
-        self.container = container
+    def added(self):
         zeroconf.zeroconfService.subscribeTo(self.type)
         zeroconf.zeroconfEvents.addObserver("service-found", self._found)
         zeroconf.zeroconfEvents.addObserver("service-lost", self._lost)

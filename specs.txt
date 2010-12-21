@@ -30,7 +30,6 @@ DONE:
   - log area
 
 
-hardware.hal       -- plug & play of devices
 
 monitors
  - network
@@ -41,6 +40,13 @@ monitors
   - power connection
   - easy-to-write custom sanity checks
 
+
+* hardware detection plug and play
+ - plug & play of devices
+ - webcams
+  - serial ports
+  - automatic mapping of detected hardware onto service classes;
+    protocol sniffing / probing for serial devices
 
 
 TO DO:
@@ -55,12 +61,9 @@ hardware.protocols -- various hardware protocols
 
 
 * hardware detection plug and play
-  - webcams
-  - rfid readers
+  - rfid readers (sonmicro, stronglink)
+  - generic packet-based binary serial protocol
   - HID devices
-  - serial ports
-  - automatic mapping of detected hardware onto service classes;
-    protocol sniffing / probing for serial devices
 
 * remote control (OSC)
   standard interface into the machine state and connected devices

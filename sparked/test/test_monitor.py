@@ -11,20 +11,39 @@ from twisted.trial import unittest
 
 from sparked import monitors
 
+
+class FooMonitor(monitors.Monitor):
+    pass
+
+
 class TestMonitorContainer(unittest.TestCase):
     """
     Test the L{sparked.monitors.MonitorContainer}
     """
 
+
     def testAddRemove(self):
+        c = monitors.MonitorContainer()
+        m = FooMonitor()
+
+        self.assertEquals(m.container, None)
+        self.assertEquals(c.monitors, [])
+
+        c.addMonitor(m)
+        self.assertEquals(m.container, c)
+        self.assertEquals(c.monitors, [m])
+
+        c.removeMonitor(m)
+        self.assertEquals(m.container, None)
+        self.assertEquals(c.monitors, [])
+
+
+    def testSignals(self):
         """
         Whether the "updated" signal comes in when a monitor changes state.
         """
         self.pinged = 0
         
-        class FooMonitor(monitors.Monitor):
-            pass
-
         container = monitors.MonitorContainer()
 
         def ping(c):
@@ -48,3 +67,23 @@ class TestMonitorContainer(unittest.TestCase):
         self.assertEquals(container.monitors, [b])
 
 
+    def testRemoveNonExisting(self):
+        ca = monitors.MonitorContainer()
+        self.assertRaises(ValueError, ca.removeMonitor, FooMonitor())
+
+
+    def testAddToOther(self):
+        """
+        Whether the "updated" signal comes in when a monitor changes state.
+        """
+
+        ca = monitors.MonitorContainer()
+        cb = monitors.MonitorContainer()
+
+        m = FooMonitor()
+        ca.addMonitor(m)
+        self.assertEquals(ca.monitors, [m])
+        self.assertEquals(cb.monitors, [])
+        cb.addMonitor(m)
+        self.assertEquals(ca.monitors, [])
+        self.assertEquals(cb.monitors, [m])
