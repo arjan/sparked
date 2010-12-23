@@ -14,7 +14,7 @@ from sparked.hardware import serialcommand
 
 class MyProto(serialcommand.SerialCommandProtocol):
 
-    commands = [ ('PING', 0x01) ]
+    responses = [ ('PING', 0x01) ]
 
     pinged = 0
 
@@ -50,6 +50,6 @@ class TestSerialCommand(unittest.TestCase):
 
     def testWithData(self):
         proto = MyProto()
-        proto.dataReceived("\xFF\x00\x03\x01\xAA\xBB\x03")
+        proto.dataReceived("\xFF\x00\x04\x01\xAA\xBB\x6A")
         self.assertEquals(proto.pinged, 1)
         self.assertEquals(proto.lastData, "\xAA\xBB")
