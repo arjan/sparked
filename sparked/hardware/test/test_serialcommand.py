@@ -14,7 +14,11 @@ from sparked.hardware import serialcommand
 
 class MyProto(serialcommand.SerialCommandProtocol):
 
-    responses = [ ('PING', 0x01) ]
+    commands = [ ('PING', 0x01) ]
+
+    sndPreamble = "\xFF\x00"
+    rcvPreamble = "\xFF\x00"
+    lengthIncludesChecksum = True
 
     pinged = 0
 

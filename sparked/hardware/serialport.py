@@ -25,6 +25,7 @@ class SerialPortMonitor (hal.HardwareMonitor):
     Serial port device monitor.
     """
     subsystem = "serial"
+    uniquePath = "/dev/serial/by-id/"
 
     def __init__(self):
         self.events = serialEvents
