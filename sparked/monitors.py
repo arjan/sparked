@@ -60,7 +60,7 @@ class MonitorContainer (service.MultiService):
         monitor is not part of the container.
         """
         i = self.monitors.index(monitor)
-        self.monitors[i].removed(self)
+        self.monitors[i].removed()
         self.monitors[i].container = None
         del self.monitors[i]
         self.update()
@@ -77,11 +77,11 @@ class MonitorContainer (service.MultiService):
         self.lastState = self.state
         if not self.verbose:
             return
-            log.msg("= STATUS =====================")
-            for m in self.monitors:
-                stat = {None: "n/a", True: "ok", False: "FAIL"}[m.ok]
-                log.msg("%-26s%4s" % (m.title, stat))
-            log.msg("==============================")
+        log.msg("= STATUS =====================")
+        for m in self.monitors:
+            stat = {None: "n/a", True: "ok", False: "FAIL"}[m.ok]
+            log.msg("%-26s%4s" % (m.title, stat))
+        log.msg("==============================")
 
 
     @property
@@ -106,6 +106,7 @@ class Monitor(object):
 
     ok = None
     container = None
+    title = "(monitor)"
 
     def added(self):
         """
@@ -114,7 +115,7 @@ class Monitor(object):
         """
         pass
 
-    def removed(self, container):
+    def removed(self):
         """
         Called when monitor is removed from container. The container can
         be used to hook services to.
