@@ -4,6 +4,25 @@ from twisted.python import log
 from twisted.internet import protocol
 
 
+"""
+A generalization of a simple, datagram based binary protocol.
+
+Every datagram consists of a preamble to indicate the start of the
+packet, followed by a byte with the length of the rest of the payload.
+Then the command byte which indicates which command is being executed
+(or responded to). Then optionally a data packet, and the datagram is
+concluded with a single checksum byte.
+
+The L{SerialCommandProtocol} abstracts above packet handling so that
+the preamble and the checksum bytes can be customized for specific
+devices.
+
+See L{sparked.hardware.rfid} for a few implementations of this
+protocol in RFID readers.
+"""
+
+
+
 class SerialCommandProtocol(protocol.Protocol):
     """
     @ivar rcvPreamble: String which contains the package header which is expected to be received.
