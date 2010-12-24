@@ -162,6 +162,7 @@ class TestApplication(unittest.TestCase):
         self.assertEquals({}, app.baseOpts)
 
         self.assertIsInstance(app.state, StateMachine)
+        self.assertTrue(app.state.verbose)
         self.assertIsInstance(app.events, EventDispatcher)
         self.assertIsInstance(app.monitors, MonitorContainer)
 
@@ -229,6 +230,7 @@ class TestStateMachine(unittest.TestCase):
     def testConstruct(self):
         m = StateMachine(None)
         self.assertEquals(None, m.get)
+        self.assertFalse(m.verbose)
 
 
     def testGetSet(self):
@@ -323,4 +325,20 @@ class TestStateMachine(unittest.TestCase):
         self.assertEquals(self.called, ["enter_a", "enter_a2"])
         m.set("b")
         self.assertEquals(self.called, ["enter_a", "enter_a2", "exit_a2", "exit_a", "enter_b", "enter_b2"])
+
+
+
+    def testExtraListenerWithArguments(self):
+        self.called = []
+	self.args = []
+        class Listener:
+            post=""
+            def enter_a(s, *a): self.called.append("enter_a"+s.post); self.args += a
+        m = StateMachine(Listener())
+        l2 = Listener()
+        l2.post = "2"
+        m.addListener(l2, "foo", "bar", 1234)
+        m.set("a")
+        self.assertEquals(self.called, ["enter_a", "enter_a2"])
+	self.assertEquals(self.args, ["foo", "bar", 1234])
 

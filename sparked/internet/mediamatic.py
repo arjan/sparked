@@ -85,10 +85,6 @@ class AnymetaAPIMonitor (monitors.Monitor):
         return d
 
 
-    def added(self, container):
-        self.container = container
-
-
 class MediamaticWebMonitor(monitors.NetworkWebMonitor):
     title = "hwdeps.mediamatic.nl"
 
