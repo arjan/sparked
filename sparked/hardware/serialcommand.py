@@ -3,6 +3,8 @@ import warnings
 from twisted.python import log
 from twisted.internet import protocol
 
+from sparked import events
+
 
 """
 A generalization of a simple, datagram based binary protocol.
@@ -41,10 +43,13 @@ class SerialCommandProtocol(protocol.Protocol):
 
     minPkgLength = None
 
+    events = None
+
 
     def __init__(self):
         self.buffer = ""
         self.minPkgLength = len(self.rcvPreamble) + 3
+	self.events = events.eventDispatcher()
 
 
     def logPackage(self, prefix, package):

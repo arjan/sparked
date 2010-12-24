@@ -295,9 +295,10 @@ class StateMachine (object):
     nextStateAfter = None
     verbose = None
 
-    def __init__(self, parent, reactor=None, verbose=False):
+    def __init__(self, parent=None, reactor=None, verbose=False):
         self._listeners = []
-        self.addListener(parent)
+	if parent:
+	    self.addListener(parent)
         if reactor is None:
             from twisted.internet import reactor
         self.reactor = reactor

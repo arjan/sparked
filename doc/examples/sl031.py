@@ -31,10 +31,7 @@ class SL031Protocol (SerialCommandProtocol):
     #logTraffic = True
 
     def calculateChecksum(self, payload):
-        cksum = 0
-        for c in payload:
-            cksum = cksum ^ ord(c)
-        return cksum
+	return reduce(lambda a,b: a^b, [ord(c) for c in payload])
 
     def got_SELECT(self, data):
 	self.logPackage("SELECT", data)
