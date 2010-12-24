@@ -67,7 +67,7 @@ class Application(service.MultiService):
             from twisted.internet import reactor
         self.reactor = reactor
 
-        self.state = StateMachine(self, reactor)
+        self.state = StateMachine(self, reactor=reactor, verbose=True)
         self.events = events.EventDispatcher()
 
         self.createMonitors()
@@ -293,14 +293,15 @@ class StateMachine (object):
     _listeners = None
 
     nextStateAfter = None
+    verbose = None
 
-
-    def __init__(self, parent, reactor=None):
+    def __init__(self, parent, reactor=None, verbose=False):
         self._listeners = []
         self.addListener(parent)
         if reactor is None:
             from twisted.internet import reactor
         self.reactor = reactor
+	self.verbose = verbose
 
 
     def set(self, newstate):
@@ -317,7 +318,8 @@ class StateMachine (object):
         if self._state:
             self._call("exit_%s" % self._state, True)  # call reversed
 
-        log.msg("%s --> %s" % (self._state, newstate))
+	if self.verbose:
+	    log.msg("%s --> %s" % (self._state, newstate))
         self._state = newstate
 
         self._call("enter_%s" % self._state)
@@ -357,12 +359,12 @@ class StateMachine (object):
         listeners = self._listeners
         if reverse:
             listeners = listeners[::-1]
-        for l in listeners:
+        for (l, args) in listeners:
             try:
-                getattr(l, cb)()
+                getattr(l, cb)(*args)
             except AttributeError:
                 pass
 
 
-    def addListener(self, l):
-        self._listeners.append(l)
+    def addListener(self, l, *args):
+        self._listeners.append((l, args))
