@@ -13,8 +13,10 @@ from twisted.internet import task
 from sparked.hardware.serialcommand import SerialCommandProtocol
 from sparked.hardware.serialport import IProtocolProbe
 
-from sparked import events
+from sparked.events import EventDispatcher
 
+
+events = EventDispatcher()
 
 
 class TagType:
@@ -28,19 +30,19 @@ class TagType:
 class IRFIDReaderProtocol(Interface):
 
     events = Attribute(
-	"""
-	An L{sparked.events.EventDispatcher} object. Implements the
-	following events:
+        """
+        An L{sparked.events.EventDispatcher} object. Implements the
+        following events:
 
-	'tag-present' with kwargs: type=<tag type>, serial=<serial> -
-	every time a tag is polled.
-	""")
+        'tag-present' with kwargs: type=<tag type>, serial=<serial> -
+        every time a tag is polled.
+        """)
 
     def start():
-	""" Start polling/seeking for tags. """
+        """ Start polling/seeking for tags. """
 
     def stop():
-	""" Stop polling/seeking for tags. """
+        """ Stop polling/seeking for tags. """
 
 
 
@@ -61,22 +63,23 @@ class SL031Protocol (SerialCommandProtocol):
     pollInterval = 0.2
 
 
+
     def calculateChecksum(self, payload):
-	return reduce(lambda a,b: a^b, [ord(c) for c in payload])
+        return reduce(lambda a,b: a^b, [ord(c) for c in payload])
 
 
     def got_SELECT(self, data):
-	self.logPackage("SELECT", data)
-	self.events.dispatch("tag-present", TagType.UNKNOWN, "DEADBEEF")
+        self.logPackage("SELECT", data)
+        self.events.dispatch("tag-present", TagType.UNKNOWN, "DEADBEEF")
 
 
     def start(self):
-	self._poller = task.LoopingCall(self.sendCommand, "SELECT")
-	self._poller.start(self.pollInterval)
+        self._poller = task.LoopingCall(self.sendCommand, "SELECT")
+        self._poller.start(self.pollInterval)
 
 
     def stop(self):
-	self._poller.stop()
+        self._poller.stop()
 
 
 
@@ -87,31 +90,28 @@ class RFIDReader (object):
     protocol = None
 
     def __init__(self, protocol, reactor=None):
-        if not IRFIDReaderProtocol.implementedBy(protocol):
-            raise Exception("%s should implement IRFIDReaderProtocol" % protocol)
-	self.protocol = protocol
-	self.protocol.events.addListener("tag-present", self.gotTag)
-	self.events = events.eventDispatcher()
-	self.tags = {}
+        assert IRFIDReaderProtocol.implementedBy(protocol)
+
+        self.events = events.eventDispatcher()
+        self.events.setEventParent(events)
+
+        self.protocol = protocol
+        self.protocol.events.addListener("tag-present", self.gotTag)
+        self.protocol.events.setEventParent(self.events)
+
+        self.tags = {}
         if reactor is None:
             from twisted.internet import reactor
         self.reactor = reactor
 
 
     def _tagTimeout(self, tpe, tag):
-	self.events.dispatch("tag-removed", tpe, tag)
-	del self.tags[tag]
+        self.events.dispatch("tag-removed", tpe, tag)
+        del self.tags[tag]
 
 
     def gotTag(self, tpe, tag):
-	if tag in self.tags:
-	    return self.tags[tag].reset(self.timeout)
-	self.tags[tag] = self.reactor.callLater(self.timeout, self._tagTimeout, tpe, tag)
-	self.events.dispatch("tag-added", tpe, tag)
-
-
-
-
-
-
-
+        if tag in self.tags:
+            return self.tags[tag].reset(self.timeout)
+        self.tags[tag] = self.reactor.callLater(self.timeout, self._tagTimeout, tpe, tag)
+        self.events.dispatch("tag-added", tpe, tag)

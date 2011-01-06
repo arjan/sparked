@@ -90,3 +90,26 @@ class TestEventDispatcher(unittest.TestCase):
         d.addObserver("y", receive, foo='bar')
         d.dispatch("y", foo='baz')
         self.assertEquals({'foo': 'baz'}, self.kw)
+
+
+    def testParent(self):
+        """
+        Simple dispatching test
+        """
+        d = events.EventDispatcher()
+        p = events.EventDispatcher()
+
+        d.setEventParent(p)
+
+        self.count = 0
+
+        def receive():
+            self.count += 1
+        p.addObserver("hello", receive)
+
+        d.dispatch("hello")
+        self.assertEquals(self.count, 1)
+        d.dispatch("world")
+        self.assertEquals(self.count, 1)
+        d.dispatch("hello")
+        self.assertEquals(self.count, 2)

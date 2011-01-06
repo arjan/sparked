@@ -49,21 +49,21 @@ class SerialCommandProtocol(protocol.Protocol):
     def __init__(self):
         self.buffer = ""
         self.minPkgLength = len(self.rcvPreamble) + 3
-	self.events = events.eventDispatcher()
+        self.events = events.EventDispatcher()
 
 
     def logPackage(self, prefix, package):
-	log.msg("%s %s %s" % (repr(self), prefix, self.readablePackage(package)))
+        log.msg("%s %s %s" % (repr(self), prefix, self.readablePackage(package)))
 
 
     def readablePackage(self, package):
-	return "[%s]" % (":".join(["%02X"%(ord(x)) for x in package]))
+        return "[%s]" % (":".join(["%02X"%(ord(x)) for x in package]))
 
 
     def __repr__(self):
-	if not self.transport:
-	    return str(self.__class__)
-	return "%s @ %s (%s)" % (self.transport._serial.portstr, self.transport._serial.baudrate, self.__class__)
+        if not self.transport:
+            return str(self.__class__)
+        return "%s @ %s (%s)" % (self.transport._serial.portstr, self.transport._serial.baudrate, self.__class__)
 
 
     def sendCommand(self, logical, data=""):
@@ -74,8 +74,8 @@ class SerialCommandProtocol(protocol.Protocol):
         payload += chr(self.calculateChecksum(payload))
         self.transport.write(payload)
         self.transport.flushOutput()
-	if self.logTraffic:
-	    self.logPackage(">>", payload)
+        if self.logTraffic:
+            self.logPackage(">>", payload)
 
 
     def calculateChecksum(self, payload):
@@ -83,8 +83,8 @@ class SerialCommandProtocol(protocol.Protocol):
 
 
     def dataReceived(self, data):
-	if self.logTraffic and self.logRawTraffic:
-	    self.logPackage("RAW <<", data)
+        if self.logTraffic and self.logRawTraffic:
+            self.logPackage("RAW <<", data)
 
         self.buffer += data
 
@@ -99,9 +99,9 @@ class SerialCommandProtocol(protocol.Protocol):
 
         length = ord(self.buffer[len(self.rcvPreamble)])
 
-	if not self.lengthIncludesChecksum:
-	    # need one byte more
-	    length += 1
+        if not self.lengthIncludesChecksum:
+            # need one byte more
+            length += 1
 
         if len(self.buffer) < len(self.rcvPreamble) + 1 + length:
             # Not all data has arrived. We have to wait for more data.
@@ -120,15 +120,15 @@ class SerialCommandProtocol(protocol.Protocol):
 
     def datagramReceived(self, datagram):
 
-	if self.logTraffic:
-	    self.logPackage("<<", datagram)
+        if self.logTraffic:
+            self.logPackage("<<", datagram)
 
-	i = len(self.rcvPreamble)
+        i = len(self.rcvPreamble)
         cmdByte = ord(datagram[i+1])
         data = datagram[i+2:-1]
         checksum = ord(datagram[-1])
 
-	calculatedChecksum = self.calculateChecksum(datagram[:-1])
+        calculatedChecksum = self.calculateChecksum(datagram[:-1])
 
         if checksum != calculatedChecksum:
             warnings.warn("Invalid datagram checksum! %02X != %02X" % (checksum, calculatedChecksum))

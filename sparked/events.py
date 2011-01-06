@@ -17,7 +17,15 @@ class EventDispatcher(utility.EventDispatcher):
     This class exists to simplify the implementation of event
     dispatchers in sparked without the syntactic sugar of xish'
     EventDispatcher class.
+
+    It adds an extra feature: the possibility to give a parent
+    dispatcher using C{setEventParent} to which events will be
+    dispatched as well.
     """
+
+    parent = None
+
+
     def __init__(self, eventprefix=""):
         utility.EventDispatcher.__init__(self, eventprefix)
 
@@ -59,4 +67,21 @@ class EventDispatcher(utility.EventDispatcher):
                 f()
             self._updateQueue = []
 
+        if self.parent:
+            self.parent.dispatch(event, *arg, **kwarg)
+
         return foundTarget
+
+
+    def setEventParent(self, p):
+        """
+        Set a parent to which events will be dispatched as well.
+        """
+        self.parent = p
+
+
+    def disownEventParent(self):
+        """
+        Unparent this event dispatcher.
+        """
+        self.parent = None
