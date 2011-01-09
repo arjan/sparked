@@ -5,7 +5,7 @@
 """
 Classes which define a generic event system.
 """
-
+from twisted.python import log
 from twisted.words.xish import utility
 
 class EventDispatcher(utility.EventDispatcher):
@@ -25,6 +25,7 @@ class EventDispatcher(utility.EventDispatcher):
 
     parent = None
 
+    verbose = False
 
     def __init__(self, eventprefix=""):
         utility.EventDispatcher.__init__(self, eventprefix)
@@ -35,6 +36,9 @@ class EventDispatcher(utility.EventDispatcher):
         Dispatch the named event to all the callbacks.
         """
         foundTarget = False
+
+        if self.verbose:
+            log.msg("%s --> %s: %s %s" % (repr(self), event, arg, kwarg))
 
         self._dispatchDepth += 1
 
