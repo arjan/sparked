@@ -8,16 +8,16 @@ RFID readers which work over serial.
 
 from zope.interface import implements, Interface, Attribute
 
-from twisted.internet import task
+from twisted.internet import task, serialport, reactor
 from twisted.python import log
 
 from sparked.hardware.serialcommand import SerialCommandProtocol
-from sparked.hardware.serialport import IProtocolProbe
+from sparked.hardware.serialport import IProtocolProbe, SerialPortMonitor, SerialProbe
 
 from sparked.events import EventDispatcher
 
 
-events = EventDispatcher()
+rfidEvents = EventDispatcher()
 
 
 class TagType:
@@ -135,15 +135,19 @@ class SonMicroProtocol (SerialCommandProtocol):
 
 class RFIDReader (object):
 
-    timeout = 0.5
-    reactor = None
+    identifier = None
     protocol = None
 
-    def __init__(self, protocol, reactor=None):
+    reactor = None
+    timeout = 0.5
+
+    def __init__(self, identifier, protocol, reactor=None):
         assert IRFIDReaderProtocol.implementedBy(protocol.__class__)
 
         self.events = EventDispatcher()
-        self.events.setEventParent(events)
+        self.events.setEventParent(rfidEvents)
+
+        self.identifier = identifier
 
         self.protocol = protocol
         self.protocol.events.addObserver("tag-present", self.gotTag)
@@ -158,7 +162,7 @@ class RFIDReader (object):
 
 
     def _tagTimeout(self, tpe, tag):
-        self.events.dispatch("tag-removed", tpe, tag)
+        self.events.dispatch("tag-removed", {'tag': tag, 'type': tpe, 'reader': self.identifier})
         del self.tags[tag]
 
 
@@ -166,4 +170,50 @@ class RFIDReader (object):
         if tag in self.tags:
             return self.tags[tag].reset(self.timeout)
         self.tags[tag] = self.reactor.callLater(self.timeout, self._tagTimeout, tpe, tag)
-        self.events.dispatch("tag-added", tpe, tag)
+        self.events.dispatch("tag-added", {'tag': tag, 'type': tpe, 'reader': self.identifier})
+
+
+    def __del__(self):
+        print "del"
+
+
+
+class RFIDMonitor (SerialPortMonitor):
+    """
+    A monitor object which tries to instantiate an L{RFIDReader} for each serial port.
+    """
+
+    def __init__(self):
+        self.readers = {}
+        self.candidates = []
+
+
+    def addCandidate(self, *arg):
+        self.candidates.append(arg)
+
+
+    def deviceAdded(self, info):
+        p = info['unique_path']
+        reactor.callLater(2, self.probe, p)
+
+
+    def deviceRemoved(self, info):
+        p = info['unique_path']
+        if p in self.readers:
+            self.readers[p].protocol.stop()
+            del self.readers[p]
+
+
+    def probe(self, device):
+        probe = SerialProbe(device)
+        for c in self.candidates:
+            probe.addCandidate(*c)
+        d = probe.start()
+        d.addCallbacks(lambda r: self.found(device, r[0], r[1]), log.err)
+        #d.addCallback(lambda _: reactor.stop())
+
+
+    def found(self, device, proto, baudrate):
+        print "MATCH >>", proto, baudrate
+        port = serialport.SerialPort(proto(), device, reactor, baudrate=baudrate)
+        self.readers[device] = RFIDReader(device, port.protocol)

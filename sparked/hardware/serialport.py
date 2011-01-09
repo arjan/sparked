@@ -27,8 +27,6 @@ class SerialPortMonitor (hal.HardwareMonitor):
     subsystem = "serial"
     uniquePath = "/dev/serial/by-id/"
 
-    def __init__(self):
-        self.events = serialEvents
 
 serialEvents = events.EventDispatcher()
 """ Global event dispatcher for all serial events """

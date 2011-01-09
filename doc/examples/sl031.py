@@ -58,28 +58,32 @@ class SonmicroProtocol (SerialCommandProtocol):
 
 class RFIDMonitor (SerialPortMonitor):
 
-    def deviceAdded(self, info):
-	d = info['device']
-	print info
-	print "added:", d
-	reactor.callLater(1, self.probe, d)
+    def __init__(self):
+        self.readers = {}
 
+
+    def deviceAdded(self, info):
+        d = info['device']
+        print info
+        print "added:", d
+        reactor.callLater(1, self.probe, d)
+                    
 
     def probe(self, device):
         probe = SerialProbe(device)
         probe.addCandidate(SonmicroProtocol, 19200)
         probe.addCandidate(SL031Protocol, 115200)
         d = probe.start()
-	d.addCallbacks(lambda r: self.found(device, r[0], r[1]), log.err)
+        d.addCallbacks(lambda r: self.found(device, r[0], r[1]), log.err)
         #d.addCallback(lambda _: reactor.stop())
 
 
     def found(self, device, proto, baudrate):
-	print "MATCH >>", proto, baudrate
-	port = serialport.SerialPort(proto(), device, reactor, baudrate=baudrate)
-	def snd():
-	    port.protocol.sendCommand("SELECT")
-	task.LoopingCall(snd).start(0.3)
+        print "MATCH >>", proto, baudrate
+        port = serialport.SerialPort(proto(), device, reactor, baudrate=baudrate)
+        def snd():
+            port.protocol.sendCommand("SELECT")
+        task.LoopingCall(snd).start(0.3)
 
 
 
