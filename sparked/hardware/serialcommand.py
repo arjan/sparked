@@ -140,7 +140,10 @@ class SerialCommandProtocol(protocol.Protocol):
 
 
     def _cmd2logical(self, cmd):
-        return [l for l,c in self.commands if c==cmd][0]
+        try:
+            return [l for l,c in self.commands if c==cmd][0]
+        except IndexError:
+            warnings.warn("Invalid or non-implemented command: %02X" % cmd)
 
 
     def _logical2cmd(self, logical):
