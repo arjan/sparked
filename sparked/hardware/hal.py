@@ -25,7 +25,8 @@ HAL_MANAGER_UDI = '/org/freedesktop/Hal/Manager'
 HAL_SUBSYSTEM_PROPERTIES = {
     'serial': ['originating_device', 'device', 'port', 'type'],
     'video4linux': ['device', 'version'],
-    'input': ['device']
+    'input': ['device'],
+    'usb': ['product', 'vendor', 'serial', 'vendor_id', 'product_id', 'interface.description']
     }
 
 
@@ -89,6 +90,15 @@ class HardwareMonitor (service.Service):
             for k in HAL_SUBSYSTEM_PROPERTIES[self.subsystem]:
                 self.deviceInfo[udi][k] = str(device.GetProperty(self.subsystem+'.'+k))
 
+        # get the USB description
+        if "originating_device" in self.deviceInfo[udi]:
+            usbDevice = self._getHalInterface(self.deviceInfo[udi]["originating_device"])
+            for k in HAL_SUBSYSTEM_PROPERTIES['usb']:
+                self.deviceInfo[udi]['usb.' + k] = str(usbDevice.GetProperty('usb.'+k))
+
+        print self.deviceInfo
+
+        # get the device name
         if "device" in self.deviceInfo[udi] and self.uniquePath:
             by_id = [p for p in glob.glob(os.path.join(self.uniquePath, "*"))
                      if os.path.realpath(p) == self.deviceInfo[udi]["device"]]
