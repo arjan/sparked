@@ -1,6 +1,4 @@
 
-
-
 DONE:
 ---------------------------------------------------------------
 
@@ -21,14 +19,13 @@ DONE:
   - --debug flag toggles log level
   - restart on crash 
   
-* usage: spark [spark options] <application> [app options]
+* usage: sparkd [sparked options] <application> [app options]
 
 
 * graphics display (clutter), easy fullscreen
 * GUI status window
   - system status area
   - log area
-
 
 
 monitors
@@ -48,6 +45,10 @@ monitors
   - automatic mapping of detected hardware onto service classes;
     protocol sniffing / probing for serial devices
 
+* hardware detection plug and play
+  - rfid readers (sonmicro, stronglink)
+  - generic packet-based binary serial protocol
+
 
 TO DO:
 ---------------------------------------------------------------
@@ -58,16 +59,7 @@ TO DO:
 
 hardware.protocols -- various hardware protocols
 
-
-
-* hardware detection plug and play
-  - rfid readers (sonmicro, stronglink)
-  - generic packet-based binary serial protocol
-  - HID devices
+* HID devices
 
 * remote control (OSC)
   standard interface into the machine state and connected devices
-
-* easy to write and plug own services
-  - based on hardware
-
