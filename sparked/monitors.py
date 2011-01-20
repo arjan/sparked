@@ -11,7 +11,6 @@ from twisted.internet import reactor
 from twisted.python import log
 
 from sparked.hardware import power, network
-from sparked.internet import zeroconf
 from sparked import events
 
 
@@ -205,6 +204,7 @@ class NamedZeroconfMonitor(Monitor):
 
 
     def added(self):
+        from sparked.internet import zeroconf
         zeroconf.zeroconfService.subscribeTo(self.type)
         zeroconf.zeroconfEvents.addObserver("service-found", self._found)
         zeroconf.zeroconfEvents.addObserver("service-lost", self._lost)
