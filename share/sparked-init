@@ -13,8 +13,8 @@ APPLICATION="${0##*/}"
 ### END INIT INFO
 # Author: Arjan Scherpenisse <arjan@scherpenisse.net>
 
-UID=nobody
-GID=nogroup
+RUN_UID=nobody
+RUN_GID=nogroup
 PIDFILE=/var/run/$APPLICATION.pid
 LOGFILE=/var/log/$APPLICATION.log
 OPTIONS=""
@@ -23,13 +23,13 @@ if [ -f /etc/default/$APPLICATION ]; then
     source /etc/default/$APPLICATION
 fi
 
-touch $LOGFILE && chown $UID:$GID $LOGFILE
+touch $LOGFILE && chown $RUN_UID:$RUN_GID $LOGFILE
 
 DAEMON=/usr/bin/twistd
-DAEMON_OPTS="--pidfile $PIDFILE --uid $UID --gid $GID sparked -s $APPLICATION $OPTIONS"
+DAEMON_OPTS="--pidfile $PIDFILE --uid $RUN_UID --gid $RUN_GID sparked -s $APPLICATION $OPTIONS"
 
 DB=/var/lib/$APPLICATION
-mkdir -p $DB && chown -R $UID:$GID $DB
+mkdir -p $DB && chown -R $RUN_UID:$RUN_GID $DB
 
 if [ ! -x $DAEMON ]; then
   echo "ERROR: Can't execute $DAEMON."
