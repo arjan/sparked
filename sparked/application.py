@@ -305,10 +305,12 @@ class StateMachine (object):
 	self.verbose = verbose
 
 
-    def set(self, newstate):
+    def set(self, newstate, *arg, **kw):
         """
         Sets a new state. Calls parent's state transition functions,
-        if they exist.
+        if they exist. The variable arguments that can be passed to
+        set() are passed on to the "enter" function of the new state on
+        every listener.
         """
 
         if self._statechanger and self._statechanger.active():
@@ -323,17 +325,17 @@ class StateMachine (object):
 	    log.msg("%s --> %s" % (self._state, newstate))
         self._state = newstate
 
-        self._call("enter_%s" % self._state)
+        self._call("enter_%s" % self._state, False, *arg, **kw)
 
 
-    def setAfter(self, newstate, after):
+    def setAfter(self, newstate, after, *arg, **kw):
         """
         Make a state transition after a specified amount of time.
         """
         self._afterStart = time.time()
         self._afterStop = self._afterStart + after
         self.nextStateAfter = after
-        self._statechanger = self.reactor.callLater(after, self.set, newstate)
+        self._statechanger = self.reactor.callLater(after, self.set, newstate, *arg, **kw)
 
 
     def bumpAfter(self, after=None):
@@ -356,13 +358,13 @@ class StateMachine (object):
         return self._state
 
 
-    def _call(self, cb, reverse=False):
+    def _call(self, cb, reverse, *a, **kw):
         listeners = self._listeners
         if reverse:
             listeners = listeners[::-1]
         for (l, args) in listeners:
             try:
-                getattr(l, cb)(*args)
+                getattr(l, cb)(*(args+a), **kw)
             except AttributeError:
                 pass
 

@@ -328,9 +328,9 @@ class TestStateMachine(unittest.TestCase):
 
 
 
-    def testExtraListenerWithArguments(self):
+    def testExtraListenerWithPredefinedArguments(self):
         self.called = []
-	self.args = []
+        self.args = []
         class Listener:
             post=""
             def enter_a(s, *a): self.called.append("enter_a"+s.post); self.args += a
@@ -340,5 +340,33 @@ class TestStateMachine(unittest.TestCase):
         m.addListener(l2, "foo", "bar", 1234)
         m.set("a")
         self.assertEquals(self.called, ["enter_a", "enter_a2"])
-	self.assertEquals(self.args, ["foo", "bar", 1234])
+        self.assertEquals(self.args, ["foo", "bar", 1234])
 
+
+    def testDynamicArguments(self):
+        self.called = []
+        self.args = []
+        class Listener:
+            def enter_a(s, *a): self.called.append("enter_a"); self.args += a
+        m = StateMachine(Listener())
+        m.set("a", 12)
+        self.assertEquals(self.called, ["enter_a"])
+        self.assertEquals(self.args, [12])
+        m.set("a", 13)
+        self.assertEquals(self.called, ["enter_a", "enter_a"])
+        self.assertEquals(self.args, [12,13])
+
+
+    def testExtraListenerWithDynamicAndPredefinedArguments(self):
+        self.called = []
+        self.args = []
+        class Listener:
+            post=""
+            def enter_a(s, *a): self.called.append("enter_a"+s.post); self.args += a
+        m = StateMachine(Listener())
+        l2 = Listener()
+        l2.post = "2"
+        m.addListener(l2, "foo", "bar", 1234)
+        m.set("a", "meh")
+        self.assertEquals(self.called, ["enter_a", "enter_a2"])
+        self.assertEquals(self.args, ["meh", "foo", "bar", 1234, "meh" ])
