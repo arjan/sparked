@@ -6,7 +6,7 @@ Twisted Application Persistence package for the startup of the twisted sparked p
 """
 
 import tempfile
-import dbus.mainloop.glib
+import warnings
 
 from twisted.python import usage
 
@@ -38,8 +38,12 @@ class Options(usage.Options):
 
 def makeService(config):
 
-    # Create dbus mainloop
-    dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    try:
+        # Create dbus mainloop
+        import dbus.mainloop.glib
+        dbus.mainloop.glib.DBusGMainLoop(set_as_default=True)
+    except ImportError:
+        warnings.warn('Failed to import the dbus module, some functionality might not work.')
 
     # Check if it is the right thing
     if not hasattr(config.module, 'Application'):
