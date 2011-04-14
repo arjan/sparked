@@ -6,26 +6,38 @@ Simple bidirectional asynchronous message passing between web and sparked app
 """
 
 import os
+import simplejson as json
 
 from twisted.web import resource, static, server, http
-
 from sparked import events
-
 
 
 class IOClient(object):
 
     request = None
+    queue = None
 
     def __init__(self, request):
         self.request = request
         self.events = events.EventDispatcher()
+        self.queue = []
+
 
     def send(self, message):
-        print ">>> SEND", message, self.request
-        self.request.write(message)
+        if not self.request:
+            self.queue.append(message)
+            return
+        self.request.write(json.dumps(message))
         self.request.finish()
-        #self.request = None # rely on javascript to open a new comet request
+        self.request = None # rely on javascript to open a new comet request
+
+
+    def setRequest(self, request):
+        self.request = request
+        if self.queue:
+            self.send(self.queue[0])
+            del self.queue[0]
+
 
 
 CLIENT_HEADER = "X-IO-ClientID"
@@ -51,7 +63,6 @@ class Receiver(resource.Resource):
         if not clientId:
             return
         def rm(_):
-            print "bye"
             self.io.removeClient(clientId)
         request.notifyFinish().addErrback(rm)
         self.io.addClient(clientId, request)
@@ -69,7 +80,7 @@ class Sender(resource.Resource):
         clientId = lookupClientId(request)
         if not clientId:
             return
-        message = request.content.read()
+        message = json.loads(request.content.read())
         self.io.clients[clientId].events.dispatch("message", message)
         request.finish()
 
@@ -92,7 +103,7 @@ class IOResource(resource.Resource):
     def addClient(self, clientId, request):
         if clientId in self.clients:
             # just update the current poll request
-            self.clients[clientId].request = request
+            self.clients[clientId].setRequest(request)
             return
         client = IOClient(request)
         self.clients[clientId] = client

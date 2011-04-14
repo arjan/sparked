@@ -29,12 +29,9 @@ class Application(application.Application):
 
     def newClient(self, c):
         print "new client", c
-        c.send("hello, javascript!")
+        c.send({'message': 'hello'})
 
         def p(msg):
             print "client message:", msg
-            c.send("pong "+msg)
-        t = task.LoopingCall(lambda : c.send("loop..."))
-        t.start(2)
+            c.send({'pong': msg})
         c.events.addObserver("message", p)
-        c.events.addObserver("disconnect", lambda : t.stop())

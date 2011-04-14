@@ -1,5 +1,15 @@
+/*
+ * Sparked
+ * -------
+ * _io_lib.js part of sparked.web.io
+ *
+ * Copyright 2011 Arjan Scherpenisse <arjan@scherpenisse.net>
+ *
+ * Released under the MIT License
+ */
 (function()
 {
+    // Generate a client ID for all requests on this page
     var clientId = "";
     var _feed = "abcdefghijklmnopqrstuvwxyz0123456789";
     for (var i=0; i<32; i++)
@@ -7,13 +17,12 @@
         clientId += _feed.charAt(Math.floor(Math.random()*_feed.length));
     }
 
-    /*
-     Provide the XMLHttpRequest constructor for IE 5.x-6.x:
-     Other browsers (including IE 7.x-9.x) do not redefine
-     XMLHttpRequest if it already exists.
-     This example is based on findings at:
-     http://blogs.msdn.com/xmlteam/archive/2006/10/23/using-the-right-version-of-msxml-in-internet-explorer.aspx
-     */
+    if (!JSON || typeof JSON.stringify != 'function' || typeof JSON.parse != 'function') 
+    {
+        throw new Error("This browser does not support native JSON encoding/decoding.");
+    }
+
+    /* Provide the XMLHttpRequest constructor for IE 5.x-6.x: */
     if (typeof XMLHttpRequest == "undefined")
         XMLHttpRequest = function () {
             try { return new ActiveXObject("Msxml2.XMLHTTP.6.0"); }
@@ -35,12 +44,12 @@
 
     function encodeMessage (input)
     {
-        return input;
+        return JSON.stringify(input);
     }
 
     function decodeMessage (input)
     {
-        return input;
+        return JSON.parse(input);
     }
 
     var currentPoll = null;
@@ -71,7 +80,7 @@
                 if (req.status != 200)
                 {
                     console.log('error!');
-                    
+
                     return;
                 }
                 receiveFunction(decodeMessage(req.responseText));
@@ -106,5 +115,3 @@
     }
 
 })();
-
-
