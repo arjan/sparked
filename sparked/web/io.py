@@ -146,7 +146,7 @@ def listen(site, prefix="sparked.web.io"):
     Serve a sparked.web.io endpoint at the given prefix.
 
     @param site: the L{twisted.web.server.Site} instance at which to serve
-    @return: A L{IOResource}
+    @return: An L{IOResource}
     """
     res = IOResource()
     site.resource.putChild(prefix, res)
