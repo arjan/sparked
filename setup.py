@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2010 Arjan Scherpenisse
+# Copyright (c) 2010,2011 Arjan Scherpenisse
 # See LICENSE for details.
 
 """

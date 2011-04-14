@@ -3,3 +3,7 @@ spark [options] <application> [application options]
 
 [HISTORY]
 Written by Arjan Scherpenisse in 2010.
+
+[DESCRIPTION]
+Sparked is an Application Development Framework for creating robust,
+complex and modular interactive installations with little effort.
