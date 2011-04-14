@@ -2,7 +2,9 @@
 # See LICENSE for details.
 
 """
-Simple bidirectional asynchronous message passing between web and sparked app
+Simple bidirectional asynchronous message passing between a web page
+and a Sparked application. Uses comet long-polling as communication
+mechanism.
 """
 
 import os
@@ -13,6 +15,14 @@ from sparked import events
 
 
 class IOClient(object):
+    """
+    Represents a single client connection.
+
+    @ivar request: The current L{twisted.web.http.Request} comet connection
+
+    @ivar queue: Intenral message queue when sending messages before
+    the comet connection has been re-established.
+    """
 
     request = None
     queue = None
@@ -43,6 +53,10 @@ class IOClient(object):
 CLIENT_HEADER = "X-IO-ClientID"
 
 def lookupClientId(request):
+    """
+    Given a L{twisted.web.http.Request}, lookup the client id. Aborts
+    the request if no client id is found.
+    """
     if not request.requestHeaders.hasHeader(CLIENT_HEADER):
         request.setResponseCode(http.NOT_ACCEPTABLE)
         request.write("Not acceptable\n")
@@ -53,7 +67,10 @@ def lookupClientId(request):
 
 
 class Receiver(resource.Resource):
-
+    """
+    The endpoint for the comet long-poll. The request's connection is
+    kept open and registered in the clients table.
+    """
     def __init__(self, io):
         resource.Resource.__init__(self)
         self.io = io
@@ -71,6 +88,9 @@ class Receiver(resource.Resource):
 
 
 class Sender(resource.Resource):
+    """
+    The endpoint for incoming messages
+    """
 
     def __init__(self, io):
         resource.Resource.__init__(self)
@@ -87,6 +107,11 @@ class Sender(resource.Resource):
 
 
 class IOResource(resource.Resource):
+    """
+    Main entrypoint which manages the currently connected clients. Has
+    send/receive childs for handling incoming and outgoing messages,
+    as well as serve the JavaScript client library.
+    """
 
     clients = None
     events = None
@@ -94,7 +119,7 @@ class IOResource(resource.Resource):
     def __init__(self):
         resource.Resource.__init__(self)
         self.clients = {}
-        self.putChild("lib.js", static.File(os.path.join(os.path.dirname(__file__), "_io_lib.js"), defaultType="text/javascript"))
+        self.putChild("lib.js", static.File(os.path.join(os.path.dirname(__file__), "io.js"), defaultType="text/javascript"))
         self.putChild("recv", Receiver(self))
         self.putChild("send", Sender(self))
         self.events = events.EventDispatcher()
@@ -116,8 +141,13 @@ class IOResource(resource.Resource):
 
 
 
+def listen(site, prefix="sparked.web.io"):
+    """
+    Serve a sparked.web.io endpoint at the given prefix.
 
-def listen(site):
+    @param site: the L{twisted.web.server.Site} instance at which to serve
+    @return: A L{IOResource}
+    """
     res = IOResource()
-    site.resource.putChild("sparked.web.io", res)
+    site.resource.putChild(prefix, res)
     return res

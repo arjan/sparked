@@ -7,7 +7,7 @@ Demonstrating sparked.web.io
 import os
 
 from twisted.web import static, resource, server
-from twisted.internet import reactor, task
+from twisted.internet import reactor
 
 from sparked import application
 from sparked.web.io import listen

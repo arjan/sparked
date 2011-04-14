@@ -50,8 +50,10 @@ setup(
                 'sparked.internet',
                 'sparked.graphics',
                 'sparked.test',
+                'sparked.web',
                 'twisted.plugins'],
-    package_data={'twisted.plugins': ['twisted/plugins/sparked.py']},
+    package_data={'twisted.plugins': ['twisted/plugins/sparked.py'],
+                  'sparked.web': ['*.js']},
 
     long_description = open(os.path.join(os.path.dirname(__file__), "README"), "r").read(),
     install_requires = [

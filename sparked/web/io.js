@@ -1,7 +1,7 @@
 /*
  * Sparked
  * -------
- * _io_lib.js part of sparked.web.io
+ * io.js part of sparked.web.io
  *
  * Copyright 2011 Arjan Scherpenisse <arjan@scherpenisse.net>
  *
@@ -11,10 +11,10 @@
 {
     // Generate a client ID for all requests on this page
     var clientId = "";
-    var _feed = "abcdefghijklmnopqrstuvwxyz0123456789";
+    var _seed = "abcdefghijklmnopqrstuvwxyz0123456789";
     for (var i=0; i<32; i++)
     {
-        clientId += _feed.charAt(Math.floor(Math.random()*_feed.length));
+        clientId += _seed.charAt(Math.floor(Math.random()*_seed.length));
     }
 
     if (!JSON || typeof JSON.stringify != 'function' || typeof JSON.parse != 'function') 
