@@ -135,6 +135,8 @@ def loadModule(app):
     Given an module or python file, load the module. Returns a tuple
     containing the loaded module and the name of the app.
     """
+    if hasattr(os, "getuid") and os.getuid() != 0:
+        sys.path.insert(0, os.path.abspath(os.getcwd()))
     args = sys.argv[:]
     sys.argv = []
     if app[-3:] == ".py" and os.path.exists(app):
@@ -143,7 +145,6 @@ def loadModule(app):
         sys.path.insert(0, path)
         from twisted.python import reflect
         app = reflect.filenameToModuleName(app)
-
     try:
         mod = __import__(app, None, None, app.split(".")[-1])
     except ImportError:

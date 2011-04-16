@@ -102,7 +102,7 @@ class Sender(resource.Resource):
             return
         message = json.loads(request.content.read())
         self.io.clients[clientId].events.dispatch("message", message)
-        request.finish()
+        return "OK\n"
 
 
 
@@ -139,6 +139,13 @@ class IOResource(resource.Resource):
         self.clients[clientId].events.dispatch("disconnect")
         del self.clients[clientId]
 
+
+    def sendAll(self, message):
+        """
+        Send a message to all connected clients
+        """
+        for c in self.clients.values():
+            c.send(message)
 
 
 def listen(site, prefix="sparked.web.io"):

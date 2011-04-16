@@ -80,7 +80,6 @@
                 if (req.status != 200)
                 {
                     console.log('error!');
-
                     return;
                 }
                 receiveFunction(decodeMessage(req.responseText));
@@ -105,13 +104,13 @@
     }
 
     // Start the poll
-    if(document.addEventListener)
+    if(window.addEventListener)
     {
-        document.addEventListener('load',startPolling, true); //W3C
+        window.addEventListener('load',startPolling, false); //W3C
     }
     else
     {
-        document.attachEvent('onload',startPolling); //IE
+        window.attachEvent('onload',startPolling); //IE
     }
 
 })();
