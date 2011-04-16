@@ -1,4 +1,4 @@
-# Copyright (c) 2010 Arjan Scherpenisse
+# Copyright (c) 2010,2011 Arjan Scherpenisse
 # See LICENSE for details.
 
 """
@@ -24,8 +24,14 @@ Sparked
      U{clutter<http://www.clutter-project.org/>} project. Optionally
      multi-display.
 
+   - B{hardware} - hardware plug and play with support for video
+     devices, RFID readers, serial ports, ...
+
+   - B{network} - networking tools, bidirectional communication with
+     javascript clients, zeroconf, etc.
+
    - much more!
 
 """
 
-__version__ = "0.9.9"
+__version__ = "0.9.10"

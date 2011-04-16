@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-# Copyright (c) 2010 Arjan Scherpenisse
+# Copyright (c) 2010,2011 Arjan Scherpenisse
 # See LICENSE for details.
 
 """
@@ -50,8 +50,8 @@ setup(
                 'sparked.internet',
                 'sparked.graphics',
                 'sparked.test',
+                'sparked.web',
                 'twisted.plugins'],
-    package_data={'twisted.plugins': ['twisted/plugins/sparked.py']},
 
     long_description = open(os.path.join(os.path.dirname(__file__), "README"), "r").read(),
     install_requires = [
