@@ -38,6 +38,11 @@ class Options(usage.Options):
 
 def makeService(config):
 
+    # install simple, blocking DNS resolver.
+    from twisted.internet import reactor
+    from twisted.internet.base import BlockingResolver
+    reactor.installResolver(BlockingResolver())
+
     try:
         # Create dbus mainloop
         import dbus.mainloop.glib
