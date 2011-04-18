@@ -1,5 +1,0 @@
-2011-03-20: Sparked 0.9.10
-------------------------
-
-Bugfixes:
- - do not crash when importing dbus module fails, but show a warning instead.

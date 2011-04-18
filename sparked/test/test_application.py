@@ -370,3 +370,53 @@ class TestStateMachine(unittest.TestCase):
         m.set("a", "meh")
         self.assertEquals(self.called, ["enter_a", "enter_a2"])
         self.assertEquals(self.args, ["meh", "foo", "bar", 1234, "meh" ])
+
+
+    def testEventsStateChange(self):
+        m = StateMachine(None)
+        received = []
+        m.events.addObserver("state-change", lambda old, new: received.append((old,new)))
+        m.set("foo")
+        self.assertEquals([(None, "foo")], received)
+        m.set("bar")
+        self.assertEquals([(None, "foo"), ("foo", "bar")], received)
+        m.set("baz")
+        self.assertEquals([(None, "foo"), ("foo", "bar"), ("bar", "baz")], received)
+
+
+    def testEventsStateAfter(self):
+        m = StateMachine(None)
+        received = []
+        m.events.addObserver("state-change", lambda old, new: received.append((old,new)))
+        m.set("foo")
+        self.assertEquals([(None, "foo")], received)
+        m.set("bar")
+        self.assertEquals([(None, "foo"), ("foo", "bar")], received)
+        m.set("baz")
+        self.assertEquals([(None, "foo"), ("foo", "bar"), ("bar", "baz")], received)
+
+
+    def testEventsStateChangeAfter(self):
+        clock = task.Clock()
+        received = []
+
+        m = StateMachine(None, reactor=clock)
+        m.events.addObserver("state-change-after", lambda state, after: received.append((state,after)))
+        m.setAfter("foo", 1.1)
+        self.assertEquals([("foo", 1.1)], received)
+
+
+    def testEventsBumpAfter(self):
+        clock = task.Clock()
+        received = []
+
+        m = StateMachine(None, reactor=clock)
+        m.events.addObserver("bump-after", lambda after: received.append(after))
+        m.setAfter("foo", 1.1)
+        clock.advance(0.5)
+        m.bumpAfter()
+        self.assertEquals([1.1], received)
+        m.bumpAfter(2)
+        self.assertEquals([1.1, 2], received)
+
+

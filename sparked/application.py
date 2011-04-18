@@ -286,6 +286,11 @@ class StateMachine (object):
 
     @ivar nextStateAfter: nr of seconds after which the next state
     change is triggered. If None, the timer is not active.
+
+    @ivar verbose: Control whether this StateMachine logs its transitions.
+
+    @ivar events: L{sparked.events.EventDispatcher} object which fires
+    on state transitions.
     """
 
     _state = None
@@ -294,15 +299,17 @@ class StateMachine (object):
 
     nextStateAfter = None
     verbose = None
+    events = None
 
     def __init__(self, parent=None, reactor=None, verbose=False):
         self._listeners = []
-	if parent:
-	    self.addListener(parent)
+        if parent:
+            self.addListener(parent)
         if reactor is None:
             from twisted.internet import reactor
         self.reactor = reactor
-	self.verbose = verbose
+        self.verbose = verbose
+        self.events = events.EventDispatcher()
 
 
     def set(self, newstate, *arg, **kw):
@@ -321,11 +328,13 @@ class StateMachine (object):
         if self._state:
             self._call("exit_%s" % self._state, True)  # call reversed
 
-	if self.verbose:
-	    log.msg("%s --> %s" % (self._state, newstate))
+        if self.verbose:
+            log.msg("%s --> %s" % (self._state, newstate))
+        oldstate = self._state
         self._state = newstate
 
         self._call("enter_%s" % self._state, False, *arg, **kw)
+        self.events.dispatch("state-change", oldstate, newstate)
 
 
     def setAfter(self, newstate, after, *arg, **kw):
@@ -336,6 +345,7 @@ class StateMachine (object):
         self._afterStop = self._afterStart + after
         self.nextStateAfter = after
         self._statechanger = self.reactor.callLater(after, self.set, newstate, *arg, **kw)
+        self.events.dispatch("state-change-after", newstate, after)
 
 
     def bumpAfter(self, after=None):
@@ -348,6 +358,7 @@ class StateMachine (object):
             after = self.nextStateAfter
         self.nextStateAfter = after
         self._statechanger.reset(after)
+        self.events.dispatch("bump-after", after)
 
 
     @property

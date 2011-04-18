@@ -52,7 +52,7 @@ setup(
                 'sparked.test',
                 'sparked.web',
                 'twisted.plugins'],
-
+    package_data = {'sparked.web': ['*.js']},
     long_description = open(os.path.join(os.path.dirname(__file__), "README"), "r").read(),
     install_requires = [
       'Twisted>=9.0'

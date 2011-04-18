@@ -1,0 +1,32 @@
+2011-04-18: Sparked 0.9.12
+------------------------
+
+Features:
+ - sparked.application - StateMachine now has an events object to listen to state changes
+
+Bugfixes:
+ - sparked.tap - use blocking resolver to work around DNS resolution issues
+ - add current directory when importing sparked module (unless root)
+ - add *.js to package_data to fix Pypi package
+
+
+2011-04-15: Sparked 0.9.11
+------------------------
+
+Bugfixes:
+ - sparked.web.io - fix for including multiple script tags
+ - add current directory when importing sparked module (unless root)
+
+
+2011-04-13: Sparked 0.9.10
+------------------------
+
+New features:
+ - sparked.web.io - longpolling based messaging between python and javascript
+
+
+2011-03-20: Sparked 0.9.10
+------------------------
+
+Bugfixes:
+ - do not crash when importing dbus module fails, but show a warning instead.
