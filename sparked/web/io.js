@@ -66,7 +66,7 @@
         req.send(encodeMessage(msg));
     }
 
-    function doPoll(msg)
+    function doPoll()
     {
         if (currentPoll)
         {
@@ -79,7 +79,8 @@
             {
                 if (req.status != 200)
                 {
-                    console.log('error!');
+                    console.log('Communication error, retrying...');
+                    setTimeout(doPoll, 2500);
                     return;
                 }
                 receiveFunction(decodeMessage(req.responseText));
@@ -87,7 +88,7 @@
                 doPoll();
             }
         };
-        req.send(msg);
+        req.send('');
     }
 
     // The global entry points
