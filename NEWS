@@ -1,3 +1,10 @@
+2011-04-22: Sparked 0.9.13
+------------------------
+
+Bugfixes:
+ - sparked.web.io - When connection fails, javascript now keeps retrying periodically.
+
+
 2011-04-18: Sparked 0.9.12
 ------------------------
 
