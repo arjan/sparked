@@ -1,3 +1,11 @@
+2011-04-23: Sparked 0.10
+------------------------
+
+New features:
+ - sparked.web.util - Utility module for twisted.web - simple
+   uploading files and wrapping HTTP authentication.
+
+
 2011-04-22: Sparked 0.9.13
 ------------------------
 
