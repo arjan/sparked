@@ -1,3 +1,10 @@
+2011-04-XX: Sparked 0.11
+------------------------
+
+Bug fixes:
+ - sparked.web.io - check for window.console before console.log()ing
+
+
 2011-04-23: Sparked 0.10
 ------------------------
 

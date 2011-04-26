@@ -57,7 +57,7 @@
 
     var receiveFunction = function(msg)
     {
-        console.log("sparked.web.io: Message received", msg);
+        window.console && console.log("sparked.web.io: Message received", msg);
     };
 
     function sendMessage(msg)
@@ -79,7 +79,7 @@
             {
                 if (req.status != 200)
                 {
-                    console.log('Communication error, retrying...');
+                    window.console && console.log('Communication error, retrying...');
                     setTimeout(doPoll, 2500);
                     return;
                 }
