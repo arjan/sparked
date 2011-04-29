@@ -1,8 +1,8 @@
 include doc/sparkd.1
-include share/sparked-init
 include LICENSE
 include NEWS
 include twisted/plugins/sparked.py
 recursive-include doc/examples *.py
 recursive-include doc/api *.html
 recursive-include sparked/web *.js
+recursive-include lib *
