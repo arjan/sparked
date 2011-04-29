@@ -18,7 +18,7 @@ RUN_GID=nogroup
 PIDFILE=/var/run/$APPLICATION.pid
 LOGFILE=/var/log/$APPLICATION.log
 OPTIONS=""
-REACTOR=default
+REACTOR=""
 
 if [ -f /etc/default/$APPLICATION ]; then
     . /etc/default/$APPLICATION
@@ -27,7 +27,10 @@ fi
 touch $LOGFILE && chown $RUN_UID:$RUN_GID $LOGFILE
 
 DAEMON=/usr/bin/twistd
-DAEMON_OPTS="-r $REACTOR --pidfile $PIDFILE --uid $RUN_UID --gid $RUN_GID sparked -s $APPLICATION $OPTIONS"
+DAEMON_OPTS="--pidfile $PIDFILE --uid $RUN_UID --gid $RUN_GID sparked -s $APPLICATION $OPTIONS"
+if [ "$REACTOR" != "" ]; then
+    DAEMON_OPTS="-r $REACTOR $DAEMON_OPTS"
+fi
 
 DB=/var/lib/$APPLICATION
 mkdir -p $DB && chown -R $RUN_UID:$RUN_GID $DB

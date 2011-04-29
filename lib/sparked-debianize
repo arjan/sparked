@@ -1,0 +1,111 @@
+#!/bin/bash
+
+set -e
+
+#
+# Script to create debianization of a sparked package.
+#
+
+if [ -d "debian" ]; then
+    echo "debian/ directory already exists."
+    exit 1
+fi
+
+
+APP="$1"
+VERSION="$2"
+DESC="$3"
+
+if [ "$APP" = "" -o "$DESC" = "" ]; then
+    echo "Usage: $0 <app> <version> <description>"
+    exit 1
+fi
+
+mkdir debian
+
+# CHANGE LOG
+
+dch --create --package $APP --newversion $VERSION-1 --empty "Initial release (by sparked-debianize)"
+dch -r "Release"
+
+MAINTAINER=`dpkg-parsechangelog | awk -F': ' '/^Maintainer/{print $2}'`
+YEAR=`date +%Y`
+
+# RULES FILE
+cat > debian/rules <<EOF
+#!/usr/bin/make -f
+%:
+	dh \$@
+EOF
+chmod +x debian/rules
+
+# COMPAT
+echo 7 > debian/compat
+
+# CONTROL FILE
+cat > debian/control <<EOF
+Source: ${APP}
+Section: python
+Priority: optional
+Maintainer: ${MAINTAINER}
+Build-Depends: debhelper (>= 7), python-support, python (>= 2.5), python-setuptools (>= 0.6)
+XS-Python-Version: >= 2.5
+Standards-Version: 3.9.1
+
+Package: ${APP}
+Architecture: all
+XB-Python-Version: \${python:Versions}
+Depends: \${misc:Depends}, \${python:Depends}, python-sparked
+Description: ${DESC}
+ This package installs the server for the application.
+EOF
+
+# COPYRIGHT FILE
+cat > debian/copyright <<EOF
+Copyright ${YEAR} by ${MAINTAINER}.
+This packaging is released under the MIT license.
+EOF
+
+# PYVERSIONS
+echo "2.5-" > debian/pyversions
+
+
+# INITSCRIPT
+cat > debian/$APP.init <<EOF
+#!/bin/sh
+### BEGIN INIT INFO
+# Provides:          ${APP}
+# Required-Start:    \$all
+# Required-Stop:     \$all
+# Default-Start:     2 3 4 5
+# Default-Stop:      0 1 6
+# Short-Description: Starts the ${APP} daemon.
+# Description:       ${DESC}
+### END INIT INFO
+# Author: ${MAINTAINER}
+
+APPLICATION="${APP}"
+. /usr/lib/sparked/sparked-init
+EOF
+
+if [ -d data ]; then
+# INSTALL
+cat > debian/$APP.install <<EOF
+data/* usr/share/${APP}
+EOF
+fi
+
+# LOGROTATE
+cat > debian/$APP.logrotate <<EOF
+/var/log/${APP}.log {
+	daily
+	missingok
+	rotate 10
+	compress
+}
+EOF
+
+# LINTIAN OVERRIDE FOR INIT SCRIPT
+cat > debian/$APP.lintian-overrides <<EOF
+${APP}: init.d-script-does-not-implement-required-option
+EOF
