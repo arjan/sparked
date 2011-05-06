@@ -57,12 +57,18 @@ def lookupClientId(request):
     Given a L{twisted.web.http.Request}, lookup the client id. Aborts
     the request if no client id is found.
     """
-    if not request.requestHeaders.hasHeader(CLIENT_HEADER):
+    clientId = None
+    if hasattr(request, 'received_headers'):
+        clientId = request.received_headers.get(CLIENT_HEADER.lower(), None)
+    elif request.requestHeaders.hasHeader(CLIENT_HEADER):
+        clientId = request.requestHeaders.getRawHeaders(CLIENT_HEADER)[0]
+
+    if not clientId:
         request.setResponseCode(http.NOT_ACCEPTABLE)
         request.write("Not acceptable\n")
         request.finish()
         return None
-    return request.requestHeaders.getRawHeaders(CLIENT_HEADER)[0]
+    return clientId
 
 
 
