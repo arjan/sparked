@@ -1,3 +1,11 @@
+2011-05-06: Sparked 0.13
+------------------------
+
+Bug fixes:
+ - Made sparked.web.io compatible with Twisted 8.1.0
+
+
+
 2011-04-29: Sparked 0.12
 ------------------------
 
