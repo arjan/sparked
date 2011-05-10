@@ -1,3 +1,11 @@
+2011-05-10: Sparked 0.14
+------------------------
+
+New features:
+ - Added support for custom logrotation with USR1 command. (issue #3)
+
+
+
 2011-05-06: Sparked 0.13
 ------------------------
 
