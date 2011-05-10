@@ -30,6 +30,7 @@ class Options(usage.Options):
 
     optFlags = [["debug", "d", "Debug mode"],
                 ["no-subprocess", "N", "Do not start a subprocess for crash prevention"],
+                ["no-logrotate", "l", "Do not do logrotation but rely on external program. USR1 can be used to re-open the logfile."],
                 ["system-paths", "s", """Setup the application paths so that the app is run as a
                 system-wide application. The paths are according to the Filesystem Hierarchy Standard:
                 respectively /tmp/<id>/; /var/log/<id>.log; /var/run/<id>.pid; /usr/share/<application>/; /var/lib/<id>/.

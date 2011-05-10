@@ -5,8 +5,11 @@
 Twisted Application Persistence package for the startup of the twisted sparked plugin.
 """
 
+import signal
 import tempfile
 import warnings
+
+from zope.interface import implements
 
 from twisted.python import usage
 
@@ -33,6 +36,28 @@ class Options(usage.Options):
         else:
             self.appOpts = application.Options()
         self.appOpts.parseOptions(appOpts)
+
+
+
+class RotatableFileLogObserver(object):
+    """A log observer that uses a log file and reopens it on SIGUSR1."""
+    implements(log.ILogObserver)
+
+    def __init__(self, logfilename):
+        if logfilename is None:
+            logFile = sys.stdout
+        else:
+            logFile = LogFile.fromFullPath(logfilename, rotateLength=None)
+            # Override if signal is set to None or SIG_DFL (0)
+            if not signal.getsignal(signal.SIGUSR1):
+                def signalHandler(signal, frame):
+                    from twisted.internet import reactor
+                    reactor.callFromThread(logFile.reopen)
+                signal.signal(signal.SIGUSR1, signalHandler)
+        self.observer = log.FileLogObserver(logFile)
+
+    def __call__(self, eventDict):
+        self.observer.emit(eventDict)
 
 
 
@@ -69,11 +94,17 @@ def makeService(config):
         if not path.exists():
             path.createDirectory()
 
-    # Set up logging in /tmp/log, maximum 9 rotated log files.
+    # Set up logging
     logFile = s.path("logfile")
     if not logFile.parent().exists():
         logFile.parent().createDirectory()
-    logFile = LogFile.fromFullPath(s.path("logfile").path, maxRotatedFiles=9)
-    log.addObserver(log.FileLogObserver(logFile).emit)
+    filename = s.path("logfile").path
+
+    if config.opts['no-logrotate']:
+        observer = RotatableFileLogObserver(filename)
+    else:
+        logFile = LogFile.fromFullPath(filename, maxRotatedFiles=9)
+        observer = log.FileLogObserver(logFile).emit
+    log.addObserver(observer)
 
     return s
