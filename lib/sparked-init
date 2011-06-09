@@ -23,7 +23,6 @@ REACTOR=""
 if [ -f /etc/default/$APPLICATION ]; then
     . /etc/default/$APPLICATION
 fi
-
 touch $LOGFILE && chown $RUN_UID:$RUN_GID $LOGFILE
 
 DAEMON=/usr/bin/twistd

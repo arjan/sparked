@@ -6,3 +6,4 @@ recursive-include doc/examples *.py
 recursive-include doc/api *.html
 recursive-include sparked/web *.js
 recursive-include lib *
+recursive-include bin *

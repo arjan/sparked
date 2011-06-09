@@ -102,8 +102,10 @@ cat > debian/$APP.logrotate <<EOF
 	missingok
 	rotate 10
 	compress
+	create 0644 nobody nogroup
 	postrotate
 		kill -USR1 `cat /var/run/$APP.pid`
+	endscript
 }
 EOF
 
