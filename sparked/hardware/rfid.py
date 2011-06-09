@@ -8,7 +8,7 @@ RFID readers which work over serial.
 
 from zope.interface import implements, Interface, Attribute
 
-from twisted.internet import task, serialport, reactor
+from twisted.internet import task, serialport, reactor, defer
 from twisted.python import log
 
 from sparked.hardware.serialcommand import SerialCommandProtocol
@@ -55,8 +55,10 @@ class SL031Protocol (SerialCommandProtocol):
     probeResponse = "\xBD\x03\x01\x01\xBE"
 
     # SerialCommandProtocol variables
-    sndPreamble = "\xBA"
-    rcvPreamble = "\xBD"
+    sndIntro = "\xBA"
+    sndOutro = ""
+    rcvIntro = "\xBD"
+    rcvOutro = ""
     lengthIncludesChecksum = True
 
     commands = [ ("SELECT", 0x01) ]
@@ -90,8 +92,10 @@ class SonMicroProtocol (SerialCommandProtocol):
     probeRequest = "\xFF\x00\x01\x83\x84"
     probeResponse = "\xFF\x00\x02\x83\x4E\xD3"
 
-    sndPreamble = "\xFF\x00"
-    rcvPreamble = "\xFF\x00"
+    sndIntro = "\xFF\x00"
+    sndOutro = ""
+    rcvIntro = "\xFF\x00"
+    rcvOutro = ""
     lengthIncludesChecksum = False
 
     commands = [ ("SELECT", 0x83),
@@ -130,6 +134,42 @@ class SonMicroProtocol (SerialCommandProtocol):
 
     def stop(self):
         self._poller.stop()
+
+
+
+class HongChangTagProtocol (SerialCommandProtocol):
+    implements (IRFIDReaderProtocol)
+
+    sndIntro = "\x02\x00"
+    sndOutro = "\x03"
+    rcvIntro = "\x02\x00"
+    rcvOutro = "\x03"
+    lengthIncludesChecksum = False
+    checksumIncludesOutro = False
+
+    commands = [ ("OK", 0x00), # recv
+
+                 ("LED1", 0x87),
+                 ("LED2", 0x88),
+                 ("MF_GET_SNR", 0x25) ]
+
+    d = None # the deferred
+
+    def calculateChecksum(self, payload):
+        return reduce(lambda a,b: a^b, [ord(c) for c in payload[len(self.sndIntro):]])
+
+
+    def sendCommand(self, logical, data=""):
+        if self.d is not None:
+            warnings.warn("Sending command before response from previous command arrived")
+        self.d = defer.Deferred()
+        SerialCommandProtocol.sendCommand(self, logical, data)
+
+
+    def got_OK(self, data):
+        d = self.d
+        self.d = None
+        d.callback(data)
 
 
 

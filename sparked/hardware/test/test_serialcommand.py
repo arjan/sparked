@@ -16,8 +16,10 @@ class MyProto(serialcommand.SerialCommandProtocol):
 
     commands = [ ('PING', 0x01) ]
 
-    sndPreamble = "\xFF\x00"
-    rcvPreamble = "\xFF\x00"
+    sndIntro = "\xFF\x00"
+    sndOutro = ""
+    rcvIntro = "\xFF\x00"
+    rcvOutro = ""
     lengthIncludesChecksum = True
 
     pinged = 0

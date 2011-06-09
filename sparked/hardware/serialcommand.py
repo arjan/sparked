@@ -9,14 +9,14 @@ from sparked import events
 """
 A generalization of a simple, datagram based binary protocol.
 
-Every datagram consists of a preamble to indicate the start of the
+Every datagram consists of a intro to indicate the start of the
 packet, followed by a byte with the length of the rest of the payload.
 Then the command byte which indicates which command is being executed
 (or responded to). Then optionally a data packet, and the datagram is
 concluded with a single checksum byte.
 
 The L{SerialCommandProtocol} abstracts above packet handling so that
-the preamble and the checksum bytes can be customized for specific
+the intro and the checksum bytes can be customized for specific
 devices.
 
 See L{sparked.hardware.rfid} for a few implementations of this
@@ -27,16 +27,22 @@ protocol in RFID readers.
 
 class SerialCommandProtocol(protocol.Protocol):
     """
-    @ivar rcvPreamble: String which contains the package header which is expected to be received.
-    @ivar sndPreamble: String which contains the package header on outgoing packages.
+    @ivar rcvIntro: String which contains the package header which is expected to be received.
+    @ivar sndIntro: String which contains the package header on outgoing packages.
 
     """
 
     commands = []
 
-    rcvPreamble = None
-    sndPreamble = None
+    rcvIntro = None
+    rcvOutro = None
+
+    sndIntro = None
+    sndOutro = None
+
     lengthIncludesChecksum = None
+    checksumIncludesIntro = True
+    checksumIncludesOutro = True
 
     logTraffic = False
     logRawTraffic = False
@@ -48,7 +54,7 @@ class SerialCommandProtocol(protocol.Protocol):
 
     def __init__(self):
         self.buffer = ""
-        self.minPkgLength = len(self.rcvPreamble) + 3
+        self.minPkgLength = len(self.rcvIntro) + 3 + len(self.rcvOutro)
         self.events = events.EventDispatcher()
 
 
@@ -67,11 +73,12 @@ class SerialCommandProtocol(protocol.Protocol):
 
 
     def sendCommand(self, logical, data=""):
-        payload = self.sndPreamble
+        payload = self.sndIntro
         payload += chr(1+len(data)+int(self.lengthIncludesChecksum))
         payload += chr(self._logical2cmd(logical))
         payload += data
         payload += chr(self.calculateChecksum(payload))
+        payload += self.sndOutro
         self.transport.write(payload)
         self.transport.flushOutput()
         if self.logTraffic:
@@ -79,7 +86,7 @@ class SerialCommandProtocol(protocol.Protocol):
 
 
     def calculateChecksum(self, payload):
-        return sum(map(ord, payload[len(self.sndPreamble):])) % 256
+        return sum(map(ord, payload[len(self.sndIntro):])) % 256
 
 
     def dataReceived(self, data):
@@ -92,22 +99,22 @@ class SerialCommandProtocol(protocol.Protocol):
         if len(self.buffer) < self.minPkgLength:
             return
 
-        if self.buffer[:len(self.rcvPreamble)] != self.rcvPreamble:
+        if self.buffer[:len(self.rcvIntro)] != self.rcvIntro:
             warnings.warn("Invalid SerialCommandProtocol response!")
             self.buffer = ""
             return
 
-        length = ord(self.buffer[len(self.rcvPreamble)])
+        length = ord(self.buffer[len(self.rcvIntro)])
 
         if not self.lengthIncludesChecksum:
             # need one byte more
             length += 1
 
-        if len(self.buffer) < len(self.rcvPreamble) + 1 + length:
+        if len(self.buffer) < len(self.rcvIntro) + 1 + length + len(self.rcvOutro):
             # Not all data has arrived. We have to wait for more data.
             return
 
-        boundary = len(self.rcvPreamble) + 1 + length
+        boundary = len(self.rcvIntro) + 1 + length + len(self.rcvOutro)
 
         datagram = self.buffer[:boundary]
         self.datagramReceived(datagram)
@@ -123,12 +130,19 @@ class SerialCommandProtocol(protocol.Protocol):
         if self.logTraffic:
             self.logPackage("<<", datagram)
 
-        i = len(self.rcvPreamble)
-        cmdByte = ord(datagram[i+1])
-        data = datagram[i+2:-1]
-        checksum = ord(datagram[-1])
+        start = 0
+        if not self.checksumIncludesIntro:
+            start = len(self.rcvIntro)
+        end = -1
+        if not self.checksumIncludesOutro:
+            end -= len(self.rcvOutro)
 
-        calculatedChecksum = self.calculateChecksum(datagram[:-1])
+        i = len(self.rcvIntro)
+        cmdByte = ord(datagram[i+1])
+        data = datagram[i+2:end]
+
+        checksum = ord(datagram[end])
+        calculatedChecksum = self.calculateChecksum(datagram[start:end])
 
         if checksum != calculatedChecksum:
             warnings.warn("Invalid datagram checksum! %02X != %02X" % (checksum, calculatedChecksum))
