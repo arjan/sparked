@@ -2,7 +2,7 @@ Sparked
 -------
 
 Like the Twisted asynchronous network framework, Sparked is a python
-library and an application runner in once. Some of its features follow
+library and an application runner in one. Some of its features follow
 here:
 
  * Robust startup and restart of the program; if it crashes, it's
@@ -19,7 +19,8 @@ here:
  * Fullscreen graphics display for creating interactive displays,
    based on the clutter library.
 
- * Eventing system for broadcasting messages between spark modules.
+ * Eventing system for broadcasting messages between sparked
+   components.
 
  * A state machine for guiding the application through different
    states, with callback functions.
