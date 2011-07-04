@@ -1,6 +1,7 @@
 include doc/sparkd.1
 include LICENSE
 include NEWS
+include README.md
 include twisted/plugins/sparked.py
 recursive-include doc/examples *.py
 recursive-include doc/api *.html
