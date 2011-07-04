@@ -23,7 +23,11 @@ REACTOR=""
 if [ -f /etc/default/$APPLICATION ]; then
     . /etc/default/$APPLICATION
 fi
+
 touch $LOGFILE && chown $RUN_UID:$RUN_GID $LOGFILE
+
+TMPDIR=/tmp/$APPLICATION
+mkdir -p $TMPDIR && chown $RUN_UID:$RUN_GID $TMPDIR
 
 DAEMON=/usr/bin/twistd
 DAEMON_OPTS="--pidfile $PIDFILE --uid $RUN_UID --gid $RUN_GID sparked -l -s $APPLICATION $OPTIONS"
